@@ -10,7 +10,7 @@ import { apiFetch } from '@/lib/api';
 // ── Types & Enums ───────────────────────────────────────────────────────────
 import { Paginated, CallLog, CallLogSortBy, SortOrder } from '@/types';
 
-export type UseCallLogsParams = {
+export interface UseCallLogsParams {
     marketingSourceId?: string;
     startedFrom?: string; // ISO date string
     startedTo?: string;   // ISO date string
@@ -20,6 +20,13 @@ export type UseCallLogsParams = {
     limit?: number;
 };
 
+export interface UseRecordingUrlParams {
+    callLogId: string;
+}
+
+export interface RecordingUrlResponse {
+    url: string;
+}
 
 /**
  * Build search params
@@ -35,20 +42,23 @@ function buildSearchParams(opts: Required<Pick<UseCallLogsParams,
 
     const sp = new URLSearchParams();
 
-    sp.set('page', String(page));
-    sp.set('limit', String(limit));
-    sp.set('sortOrder', sortOrder);
-
-    if (sortBy) sp.set('sortBy', sortBy);
     if (marketingSourceId) sp.set('marketingSourceId', marketingSourceId);
+
+    if(startedFrom) sp.set('startedFrom', startedFrom);
+    if(startedTo) sp.set('startedTo', startedTo);
+
+    if (page) sp.set('page', String(page));
+    if (limit) sp.set('limit', String(limit));
+
+    if (sortOrder) sp.set('sortOrder', sortOrder);
+    if (sortBy) sp.set('sortBy', sortBy);
 
     return sp.toString();
 }
 
-
 /**
  * Paginated Call Logs
- */
+*/
 export function useCallLogs(params: UseCallLogsParams = {}) {
     const {
         page = 1,
@@ -78,8 +88,28 @@ export function useCallLogs(params: UseCallLogsParams = {}) {
             const qs = buildSearchParams({
                 page, limit, sortBy, sortOrder, marketingSourceId, startedFrom, startedTo,
             });
+            
             const res = await apiFetch<Paginated<CallLog>>(`/call-logs?${qs}`);
             return res;
         },
+    });
+}
+
+/**
+ * Recording Url
+*/
+
+export function useRecordingUrl(params: UseRecordingUrlParams) {
+    const id = params.callLogId;
+    const queryKey: QueryKey = ['call-recording', id];
+
+    return useQuery({
+        queryKey,
+        queryFn: async (): Promise<RecordingUrlResponse> => {
+            const res = await apiFetch<RecordingUrlResponse>(`/call-logs/${id}/recording`);
+            return res;
+        },
+        staleTime: 25 * 60 * 1000,
+        gcTime: 25 * 60 * 1000
     });
 }

@@ -1,5 +1,5 @@
 export interface MarketingSource {
-    id: string | undefined;
+    id: string;
     name: string;
     description?: string | null;
     channel?: string | null;

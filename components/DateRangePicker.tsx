@@ -194,7 +194,7 @@ export function DateRangePicker({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="justify-start text-left font-normal min-w-52">
+        <Button variant="outline" className="justify-start text-left font-normal min-w-52 h-10">
           <CalendarIcon className="mr-2 h-4 w-4" />
           {formatDateRange(selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset))}
         </Button>

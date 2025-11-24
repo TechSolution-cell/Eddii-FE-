@@ -140,7 +140,7 @@ const Page = () => {
         </CardHeader>
 
         {/* ── List  ────────────────────────────────────────────────────────────────────────── */}
-        <CardContent className='mt-5'>
+        <CardContent className='mt-3'>
           {/* ── Filter Bar ───────────────────────────────────────────────────────*/}
           <FilterBar
             defaultValues={filters}
@@ -169,7 +169,7 @@ const Page = () => {
                 </TableRow>
               </TableHeader>
               <TableBody className='cursor-pointer'>
-                {!shouldShowFullLoader && data && data.items.map((tn) => (
+                {!error && data && !shouldShowFullLoader && data.items.map((tn) => (
                   <TableRow key={tn.id} className="hover:bg-purple-100/50">
                     <TableCell className='text-purple-800'>
                       <div className="flex items-center gap-2 font-medium">

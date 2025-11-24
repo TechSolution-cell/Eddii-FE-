@@ -62,9 +62,9 @@ const navigationItems: NavigationItem[] = [
   },
   {
     id: 'calls',
-    name: 'Calls',
+    name: 'Call Logs',
     icon: Phone,
-    href: '/calls',
+    href: '/call-logs',
     allowedRoles: ['BUSINESS_ADMIN']
   },
   {

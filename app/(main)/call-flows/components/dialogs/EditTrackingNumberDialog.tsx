@@ -270,6 +270,7 @@ export function EditTrackingNumberDialog({ open, onOpenChange, tn, }: EditTracki
                       shouldDirty: true,
                     })
                   }
+                  includeNoneOption={false}
                   disabled={updateTn.isPending}
                   placeholder="Select marketing source"
                 />

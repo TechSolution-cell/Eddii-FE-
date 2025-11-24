@@ -21,32 +21,42 @@ import { Edit, Trash2, Plus } from 'lucide-react';
 import { TruncText } from '@/components/TruncText';
 import { FilterBar, type Filters } from './components/FilterBar';
 import CreateMsDialog from './components/dialogs/CreateMsDialog';
-
-// ── Types ─────────────────────────────────────────────────────────────
-import type { MarketingSource, Paginated } from '@/types';
 import EditMsDialog from './components/dialogs/EditMsDialog';
 import DeleteMsDialog from './components/dialogs/DeleteMsDialog';
 
+// ── Types ─────────────────────────────────────────────────────────────
+import type { MarketingSource, Paginated } from '@/types';
 type LastAction = 'page' | 'limit' | 'filter' | 'other' | null;
 
-function useUrlFilters(): [Filters, (f: Filters) => void, () => void] {
+type FiltersWithPagination = Filters & {
+    page?: number;
+    limit?: number;
+};
+
+function useUrlFilters(): [FiltersWithPagination, (f: FiltersWithPagination) => void, () => void] {
     const router = useRouter();
     const sp = useSearchParams();
 
-    const current: Filters = {
+    const current: FiltersWithPagination = {
         name: sp.get('name') ?? '',
         channel: sp.getAll('channel').length ? sp.getAll('channel') : (sp.get('channel') ?? ''),
         campaignName: sp.get('campaignName') ?? '',
+
+        page: sp.get('page') ? Number(sp.get('page')) : undefined,
+        limit: sp.get('limit') ? Number(sp.get('limit')) : undefined,
     };
 
-    const setFilters = (f: Filters) => {
+    const setFilters = (f: FiltersWithPagination) => {
         const q = new URLSearchParams();
         if (f.name) q.set('name', f.name);
         if (Array.isArray(f.channel)) f.channel.forEach(c => q.append('channel', c));
         else if (f.channel) q.set('channel', f.channel);
         if (f.campaignName) q.set('campaignName', f.campaignName);
-        // preserve pagination/sort if you want:
-        // q.set('page', ...); q.set('limit', ...); etc.
+
+        // preserve pagination/sort if you want;
+        if (f?.page) q.set('page', String(f.page));
+        if (f?.limit) q.set('limit', String(f.limit));
+
         router.replace(`?${q.toString()}`, { scroll: false });
     };
 
@@ -57,12 +67,13 @@ function useUrlFilters(): [Filters, (f: Filters) => void, () => void] {
 
 export default function Page() {
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(25);
-
     const [lastAction, setLastAction] = useState<LastAction>(null);
 
     const [filters, setFilters, clearFilters] = useUrlFilters();
+
+    const [currentPage, setCurrentPage] = useState(filters?.page ?? 1);
+    const [itemsPerPage, setItemsPerPage] = useState(filters?.limit ?? 25);
+
 
     const { data, isLoading, error, isFetching }:
         {
@@ -96,12 +107,26 @@ export default function Page() {
     const handlePageChange = (page: number) => {
         setLastAction('page');
         setCurrentPage(page);
+
+        // sync page/limit into filters (and URL)
+        setFilters({
+            ...filters,
+            page,
+            limit: itemsPerPage,
+        });
     };
 
     const handleItemsPerPageChange = (newItemsPerPage: number) => {
         setLastAction('limit');
         setItemsPerPage(newItemsPerPage);
         setCurrentPage(1); // Reset to first page when changing items per page
+
+        // sync page/limit into filters (and URL)
+        setFilters({
+            ...filters,
+            page: 1,
+            limit: newItemsPerPage,
+        });
     };
 
     const handleSourceCreated = () => {
@@ -155,7 +180,7 @@ export default function Page() {
                 </CardHeader>
 
                 {/* ── List  ────────────────────────────────────────────────────────────────────────── */}
-                <CardContent className='mt-5'>
+                <CardContent className='mt-3'>
                     <FilterBar
                         defaultValues={filters}
                         onChange={(v) => {
@@ -185,7 +210,7 @@ export default function Page() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody className='cursor-pointer'>
-                                {data && !shouldShowFullLoader && data.items.map((ms) => (
+                                {!error && data && !shouldShowFullLoader && data.items.map((ms) => (
                                     <TableRow key={ms.id} className="hover:bg-purple-100/50">
                                         <TableCell className="font-medium text-purple-800">
                                             <TruncText value={ms.name} lines={1} className="w-full" />
@@ -292,7 +317,7 @@ export default function Page() {
                     {!shouldShowFullLoader && data && data?.items.length > 0 && (
                         <Pagination
                             currentPage={currentPage}
-                            totalItems={data.items.length}
+                            totalItems={data.meta.total}
                             itemsPerPage={itemsPerPage}
                             onPageChange={handlePageChange}
                             onItemsPerPageChange={handleItemsPerPageChange}

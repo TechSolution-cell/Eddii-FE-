@@ -35,25 +35,28 @@ export function MarketingSourcePicker({
     disabled,
     placeholder = "Select marketing source",
     pageSize = 25,
+    includeNoneOption = true,
+
 }: {
     value?: string;
     onChange: (val: string) => void;
     disabled?: boolean;
     placeholder?: string;
     pageSize?: number;
+    includeNoneOption: boolean;
 }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const debounced = useDebouncedValue(search, 250);
 
-    const defaultOption: MarketingSource = {
+    const noneOption: MarketingSource = {
         id: '#',
         name: "No marketing source",
         description: "Do not attribute this to a marketing source",
     };
 
     const [page, setPage] = useState(1);
-    const [items, setItems] = useState<MarketingSource[]>([defaultOption]);
+    const [items, setItems] = useState<MarketingSource[]>([noneOption]);
     const [total, setTotal] = useState<number | null>(null);
 
     const { data, isFetching, isError }: {
@@ -63,18 +66,10 @@ export function MarketingSourcePicker({
         refetch?: UseQueryResult<Paginated<MarketingSource>, Error>['refetch'];
     } = useMarketingSources({ page, limit: pageSize, name: debounced });
 
-    // Default (synthetic) option for "no marketing source"
-    // const defaultOption: MarketingSource = useMemo(() => ({
-    //     id: '#',
-    //     name: "No marketing source",
-    //     description: "Do not attribute this to a marketing source",
-    // }), []);
-
-
     // Reset pagination when search changes or popover opens
     useEffect(() => {
         setPage(1);
-        setItems([defaultOption]);
+        setItems(includeNoneOption ? [noneOption] : []);
         setTotal(null);
 
     }, [debounced]);
@@ -86,7 +81,11 @@ export function MarketingSourcePicker({
             const incoming = data.items ?? [];
             const isFirstPage = (data.meta.page ?? page) === 1;
 
-            if (isFirstPage) return [defaultOption, ...incoming];
+            if (isFirstPage) {
+                return includeNoneOption
+                    ? [noneOption, ...incoming]
+                    : [...incoming];                           // ← UPDATED
+            }
 
             // merge by id to avoid dupes
             const byId = new Map<string, MarketingSource>();
@@ -97,8 +96,9 @@ export function MarketingSourcePicker({
         setTotal(data.meta.total);
     }, [data, page]);
 
+    const baseCount = includeNoneOption ? items.length - 1 : items.length;
     const selectedItem = useMemo(() => items.find((i) => String(i.id) === value), [items, value]);
-    const canLoadMore = total == null ? true : (items.length - 1) < total;
+    const canLoadMore = total == null ? true : baseCount < total;
 
     // Infinite scroll
     const listRef = useRef<HTMLDivElement | null>(null);
@@ -118,6 +118,7 @@ export function MarketingSourcePicker({
     const handleClear = () => {
         onChange('');
         setSearch('');
+        setOpen(false);
     };
 
     return (

@@ -283,6 +283,7 @@ export function CreateTrackingNumberDialog({ open, onOpenChange, onCreateSucess 
                         shouldDirty: true,
                       })
                     }}
+                    includeNoneOption={false}
                     disabled={provision.isPending}
                     placeholder="Select marketing source"
                   />
