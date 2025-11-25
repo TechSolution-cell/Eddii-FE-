@@ -2,7 +2,7 @@
 
 // ── React & libs ──────────────────────────────────────────────
 // React Query: data fetching, caching, mutations, and helpers
-import { keepPreviousData, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, QueryKey, useQuery } from '@tanstack/react-query';
 
 // ── App utilities / hooks / state ────────────────────────────────────
 import { apiFetch } from '@/lib/api';
@@ -44,8 +44,8 @@ function buildSearchParams(opts: Required<Pick<UseCallLogsParams,
 
     if (marketingSourceId) sp.set('marketingSourceId', marketingSourceId);
 
-    if(startedFrom) sp.set('startedFrom', startedFrom);
-    if(startedTo) sp.set('startedTo', startedTo);
+    if (startedFrom) sp.set('startedFrom', startedFrom);
+    if (startedTo) sp.set('startedTo', startedTo);
 
     if (page) sp.set('page', String(page));
     if (limit) sp.set('limit', String(limit));
@@ -88,10 +88,11 @@ export function useCallLogs(params: UseCallLogsParams = {}) {
             const qs = buildSearchParams({
                 page, limit, sortBy, sortOrder, marketingSourceId, startedFrom, startedTo,
             });
-            
+
             const res = await apiFetch<Paginated<CallLog>>(`/call-logs?${qs}`);
             return res;
         },
+        placeholderData: keepPreviousData
     });
 }
 

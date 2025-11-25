@@ -52,8 +52,8 @@ function useUrlFilters(): [FiltersWithPagination, (f: FiltersWithPagination) => 
     from: parseDate(sp.get('from')) ?? startOfDay(subDays(new Date(), 29)),
     to: parseDate(sp.get('to')) ?? endOfDay(new Date()),
 
-    page: sp.get('page') ? Number(sp.get('page')) : undefined,
-    limit: sp.get('limit') ? Number(sp.get('limit')) : undefined,
+    page: sp.get('page') ? Number(sp.get('page')) : 1,
+    limit: sp.get('limit') ? Number(sp.get('limit')) : 25,
   };
 
   const setFilters = (f: FiltersWithPagination) => {
@@ -95,9 +95,8 @@ export default function Page() {
   const [lastAction, setLastAction] = useState<LastAction>(null);
   const [filters, setFilters, clearFilters] = useUrlFilters();
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
-
+  const [currentPage, setCurrentPage] = useState(filters?.page ?? 1);
+  const [itemsPerPage, setItemsPerPage] = useState(filters?.limit ?? 25);
 
   const { data, isLoading, error, isFetching }:
     {
@@ -132,6 +131,7 @@ export default function Page() {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1); // Reset to first page when changing items per page
 
+    // sync page/limit into filters (and URL)
     setFilters({
       ...filters,
       page: 1,
@@ -146,8 +146,11 @@ export default function Page() {
     (isLoading && !data) ||
     (isFetching && (lastAction === 'filter' || (!data && lastAction === null)));
 
+  const isPaginatingNow = isFetching && (lastAction === 'page' || lastAction === 'limit');
+
   return (
     <>
+      <div>wegweg : {isLoading ? 'shouldShow' : 'notShow'}</div>
       <Card className="border-purple-200 border bg-gradient-to-br from-white to-purple-50">
         {/* ── Header ───────────────────────────────────────────────────────────── */}
         <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
@@ -159,20 +162,14 @@ export default function Page() {
 
         {/* ── List  ────────────────────────────────────────────────────────────────────────── */}
         <CardContent className='mt-3'>
-          {/* ── DateRangePicker  ───────────────────────────────────────────────────────────── */}
           <div className='flex justify-end mb-3 gap-5'>
             <FilterBar
               defaultValues={filters}
               onChange={(v: Filters) => {
-                setLastAction('filter');
-
                 // reset page when filters change
-                setCurrentPage(1);
-                setFilters({
-                  ...v,
-                  page: 1,
-                  limit: itemsPerPage,
-                });
+                if (currentPage !== 1) setCurrentPage(1);
+                setLastAction('filter');
+                setFilters(v);
               }}
               onClear={() => {
                 setLastAction('filter');
@@ -189,97 +186,109 @@ export default function Page() {
 
           {/* ── Table  ────────────────────────────────────────────────────────────────────────── */}
           <div className="min-h-0 max-h-[calc(100vh-338px)] overflow-y-auto">
-            <Table className='table-fixed'>
-              <TableHeader className='sticky top-0 z-10'>
-                <TableRow className="bg-purple-200 hover:bg-purple-200">
-                  <TableHead className="text-purple-800 font-semibold ">Caller</TableHead>
-                  <TableHead className="text-purple-800 font-semibold">Tracking Number</TableHead>
-                  <TableHead className="text-purple-800 font-semibold">Marketing Source</TableHead>
-                  <TableHead className="text-purple-800 font-semibold">Duration</TableHead>
-                  <TableHead className="text-purple-800 font-semibold">Status</TableHead>
-                  <TableHead className="text-purple-800 font-semibold">Date</TableHead>
-                  <TableHead className="text-right text-purple-800 font-semibold">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className='cursor-pointer'>
-                {!error && data && !shouldShowFullLoader && data.items.map((cl) => (
-                  <TableRow key={cl.id} className="hover:bg-purple-100/50">
-                    <TableCell className="font-medium text-purple-800">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-500" />
-                        {cl.callerNumber ? fmt(cl.callerNumber) : '──────'}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium text-purple-900">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-purple-600" />
-                        {cl?.trackingNumber ? fmt(cl.trackingNumber) : '──────'}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-purple-600">
-                      <TruncText
-                        value={cl?.marketingSource?.name ?? ''}
-                        lines={1}
-                      />
-                      {cl?.marketingSource?.description && (
-                        <TruncText
-                          lines={3}
-                          preserveNewlines
-                          value={cl.marketingSource.description}
-                          className="text-sm text-muted-foreground mt-1"
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell className="text-purple-600">
-                      {formatDuration(cl.durationSeconds)}
-                    </TableCell>
-                    <TableCell className="text-purple-600">
-                      <Badge className={getStatusColor(cl.status)}>
-                        {cl.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-purple-600">
-                      {cl?.callStartedAt
-                        ? new Date(cl?.callStartedAt).toLocaleString(undefined, {
-                          year: "numeric",
-                          month: "2-digit",
-                          day: "2-digit",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false
-                        })
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedLog(cl);
-                          }}
-                          className="text-purple-600 border-purple-200 hover:bg-purple-50 gap-1"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          Details
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className={cn(
+              "relative transition-opacity duration-200",
+              isPaginatingNow && [
+                "opacity-50",
+                "pointer-events-none",
+                "blur-[1.5px]",
+                "cursor-not-allowed"
+              ]
+            )}>
+              <Table className='table-fixed'>
+                <TableHeader className='sticky top-0 z-10'>
+                  <TableRow className="bg-purple-200 hover:bg-purple-200">
+                    <TableHead className="text-purple-800 font-semibold ">Caller</TableHead>
+                    <TableHead className="text-purple-800 font-semibold">Tracking Number</TableHead>
+                    <TableHead className="text-purple-800 font-semibold">Marketing Source</TableHead>
+                    <TableHead className="text-purple-800 font-semibold">Duration</TableHead>
+                    <TableHead className="text-purple-800 font-semibold">Status</TableHead>
+                    <TableHead className="text-purple-800 font-semibold">Date</TableHead>
+                    <TableHead className="text-right text-purple-800 font-semibold">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-
-            {(shouldShowFullLoader || error) ? (
+                </TableHeader>
+                <TableBody className='cursor-pointer'>
+                  {!error && !shouldShowFullLoader && data && data.items.map((cl) => (
+                    <TableRow key={cl.id} className="hover:bg-purple-100/50">
+                      <TableCell className="font-medium text-purple-800">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-gray-500" />
+                          {cl.callerNumber ? fmt(cl.callerNumber) : '──────'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium text-purple-900">
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-purple-600" />
+                          {cl?.trackingNumber ? fmt(cl.trackingNumber) : '──────'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-purple-600">
+                        <TruncText
+                          value={cl?.marketingSource?.name ?? ''}
+                          lines={1}
+                        />
+                        {cl?.marketingSource?.description && (
+                          <TruncText
+                            lines={3}
+                            preserveNewlines
+                            value={cl.marketingSource.description}
+                            className="text-sm text-muted-foreground mt-1"
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-purple-600">
+                        {formatDuration(cl.durationSeconds)}
+                      </TableCell>
+                      <TableCell className="text-purple-600">
+                        <Badge className={getStatusColor(cl.status)}>
+                          {cl.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-purple-600">
+                        {cl?.callStartedAt
+                          ? new Date(cl?.callStartedAt).toLocaleString(undefined, {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false
+                          })
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedLog(cl);
+                            }}
+                            className="text-purple-600 border-purple-200 hover:bg-purple-50 gap-1"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Details
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {(error || shouldShowFullLoader) ? (
               <div
                 className={cn(
                   'text-center py-8 text-lg',
-                  isFetching ? 'text-purple-500' : 'text-destructive'
+                  error ? 'text-destructive' : 'text-purple-500'
                 )}
               >
-                {shouldShowFullLoader ? (
+                {error ? (
+                  <span className='mt-5'>
+                    Failed to load call logs. Please try again.
+                  </span>
+                ) : (
                   <div role="status" aria-live="polite" className="flex flex-col items-center gap-5">
                     <span>Loading your call logs...</span>
                     <Spinner
@@ -288,10 +297,6 @@ export default function Page() {
                       label="Loading call logs..."
                     />
                   </div>
-                ) : (
-                  <span className='mt-5'>
-                    Failed to load call logs. Please try again.
-                  </span>
                 )}
               </div>
             ) : (
@@ -304,13 +309,14 @@ export default function Page() {
           </div>
 
           {/* ── Pagination Control ───────────────────────────────────────────────────────────── */}
-          {!shouldShowFullLoader && data && data?.items.length > 0 && (
+          {!error && data && data?.items.length > 0 && (
             <Pagination
               currentPage={currentPage}
               totalItems={data.meta.total}
               itemsPerPage={itemsPerPage}
               onPageChange={handlePageChange}
               onItemsPerPageChange={handleItemsPerPageChange}
+              isPaginating={isPaginatingNow}
             />
           )}
 

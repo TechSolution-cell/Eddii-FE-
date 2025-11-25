@@ -19,13 +19,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination } from '@/components/Pagination';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { TruncText } from '@/components/TruncText';
-import { FilterBar, type Filters } from './components/FilterBar';
+import { FilterBar } from './components/FilterBar';
 import CreateMsDialog from './components/dialogs/CreateMsDialog';
 import EditMsDialog from './components/dialogs/EditMsDialog';
 import DeleteMsDialog from './components/dialogs/DeleteMsDialog';
 
 // ── Types ─────────────────────────────────────────────────────────────
 import type { MarketingSource, Paginated } from '@/types';
+import type { Filters } from './components/FilterBar';
 type LastAction = 'page' | 'limit' | 'filter' | 'other' | null;
 
 type FiltersWithPagination = Filters & {
@@ -42,8 +43,8 @@ function useUrlFilters(): [FiltersWithPagination, (f: FiltersWithPagination) => 
         channel: sp.getAll('channel').length ? sp.getAll('channel') : (sp.get('channel') ?? ''),
         campaignName: sp.get('campaignName') ?? '',
 
-        page: sp.get('page') ? Number(sp.get('page')) : undefined,
-        limit: sp.get('limit') ? Number(sp.get('limit')) : undefined,
+        page: sp.get('page') ? Number(sp.get('page')) : 1,
+        limit: sp.get('limit') ? Number(sp.get('limit')) : 25,
     };
 
     const setFilters = (f: FiltersWithPagination) => {
@@ -197,99 +198,114 @@ export default function Page() {
 
                     {/* ── Table  ────────────────────────────────────────────────────────────────────────── */}
                     <div className="min-h-0 max-h-[calc(100vh-338px)] overflow-y-auto pt-5">
-                        <Table className='table-fixed'>
-                            <TableHeader className='sticky top-0 z-10'>
-                                <TableRow className="bg-purple-200 hover:bg-purple-200">
-                                    <TableHead className="text-purple-800 font-semibold">Name</TableHead>
-                                    <TableHead className="text-purple-800 font-semibold">Channel</TableHead>
-                                    <TableHead className="text-purple-800 font-semibold">Campaign Name</TableHead>
-                                    <TableHead className="text-purple-800 font-semibold">Description</TableHead>
-                                    <TableHead className="text-purple-800 font-semibold">Created</TableHead>
-                                    <TableHead className="text-purple-800 font-semibold">Updated</TableHead>
-                                    <TableHead className="text-right text-purple-800 font-semibold w-35">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody className='cursor-pointer'>
-                                {!error && data && !shouldShowFullLoader && data.items.map((ms) => (
-                                    <TableRow key={ms.id} className="hover:bg-purple-100/50">
-                                        <TableCell className="font-medium text-purple-800">
-                                            <TruncText value={ms.name} lines={1} className="w-full" />
-                                        </TableCell>
-                                        <TableCell className="text-purple-600">
-                                            <TruncText value={ms?.channel ?? ''} lines={1} className="w-full" />
-                                        </TableCell>
-                                        <TableCell className="text-purple-600">
-                                            <TruncText value={ms?.campaignName ?? ''} lines={1} className="w-full" />
-                                        </TableCell>
-                                        <TableCell className="text-purple-600">
-                                            {/* {ms?.description ? ms.description : '--------'} */}
-                                            <TruncText
-                                                value={ms?.description ?? ''}
-                                                lines={3}
-                                                preserveNewlines
-                                                className="w-full"
-                                            />
-                                        </TableCell>
-                                        <TableCell className="text-purple-600">
-                                            {ms?.createdAt
-                                                ? new Date(ms.createdAt).toLocaleString(undefined, {
-                                                    year: "numeric",
-                                                    month: "2-digit",
-                                                    day: "2-digit",
-                                                    hour: "2-digit",
-                                                    minute: "2-digit",
-                                                    hour12: false
-                                                })
-                                                : "-"}
-                                        </TableCell>
-                                        <TableCell className="text-purple-600">
-                                            {ms?.updatedAt
-                                                ? new Date(ms.updatedAt).toLocaleString(undefined, {
-                                                    year: "numeric",
-                                                    month: "2-digit",
-                                                    day: "2-digit",
-                                                    hour: "2-digit",
-                                                    minute: "2-digit",
-                                                    hour12: false
-                                                })
-                                                : "-"}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className=" hover:bg-purple-200/60 hover:border-gray-600/50"
-                                                    onClick={() => handleEditClick(ms)}
-                                                    disabled={isEditDialogOpen}
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="text-red-500 hover:text-red-700 hover:bg-red-200/60 hover:border-gray-600/50"
-                                                    onClick={() => handleDeleteClick(ms)}
-                                                    disabled={isDeleteDialogOpen}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                        <div className={cn(
+                            "relative transition-opacity duration-200",
+                            isPaginatingNow && [
+                                "opacity-50",
+                                "pointer-events-none",
+                                "blur-[1.5px]",
+                                "cursor-not-allowed"
+                            ]
+                        )}>
+                            <Table className='table-fixed'>
+                                <TableHeader className='sticky top-0 z-10'>
+                                    <TableRow className="bg-purple-200 hover:bg-purple-200">
+                                        <TableHead className="text-purple-800 font-semibold">Name</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold">Channel</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold">Campaign Name</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold">Description</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold">Created</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold">Updated</TableHead>
+                                        <TableHead className="text-right text-purple-800 font-semibold w-35">Actions</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                        {(shouldShowFullLoader || error) ? (
+                                </TableHeader>
+                                <TableBody className='cursor-pointer'>
+                                    {!error && data && !shouldShowFullLoader && data.items.map((ms) => (
+                                        <TableRow key={ms.id} className="hover:bg-purple-100/50">
+                                            <TableCell className="font-medium text-purple-800">
+                                                <TruncText value={ms.name} lines={1} className="w-full" />
+                                            </TableCell>
+                                            <TableCell className="text-purple-600">
+                                                <TruncText value={ms?.channel ?? ''} lines={1} className="w-full" />
+                                            </TableCell>
+                                            <TableCell className="text-purple-600">
+                                                <TruncText value={ms?.campaignName ?? ''} lines={1} className="w-full" />
+                                            </TableCell>
+                                            <TableCell className="text-purple-600">
+                                                {/* {ms?.description ? ms.description : '--------'} */}
+                                                <TruncText
+                                                    value={ms?.description ?? ''}
+                                                    lines={3}
+                                                    preserveNewlines
+                                                    className="w-full"
+                                                />
+                                            </TableCell>
+                                            <TableCell className="text-purple-600">
+                                                {ms?.createdAt
+                                                    ? new Date(ms.createdAt).toLocaleString(undefined, {
+                                                        year: "numeric",
+                                                        month: "2-digit",
+                                                        day: "2-digit",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                        hour12: false
+                                                    })
+                                                    : "-"}
+                                            </TableCell>
+                                            <TableCell className="text-purple-600">
+                                                {ms?.updatedAt
+                                                    ? new Date(ms.updatedAt).toLocaleString(undefined, {
+                                                        year: "numeric",
+                                                        month: "2-digit",
+                                                        day: "2-digit",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                        hour12: false
+                                                    })
+                                                    : "-"}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className=" hover:bg-purple-200/60 hover:border-gray-600/50"
+                                                        onClick={() => handleEditClick(ms)}
+                                                        disabled={isEditDialogOpen}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-200/60 hover:border-gray-600/50"
+                                                        onClick={() => handleDeleteClick(ms)}
+                                                        disabled={isDeleteDialogOpen}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        {/* <TopLoadingBar isLoading={isPaginatingNow} /> */}
+                        {(error || shouldShowFullLoader) ? (
                             <div
                                 className={cn(
                                     'text-center py-8 text-lg',
-                                    isFetching ? 'text-purple-500' : 'text-destructive'
+                                    error ? 'text-destructive' : 'text-purple-500'
                                 )}
                             >
-                                {shouldShowFullLoader ? (
+                                {error ? (
+                                    <span className='mt-5'>
+                                        Failed to load marketing sources. Please try again.
+                                    </span>
+                                ) : (
                                     <div role="status" aria-live="polite" className="flex flex-col items-center gap-5">
                                         <span>Loading your marketing sources...</span>
                                         <Spinner
@@ -298,10 +314,6 @@ export default function Page() {
                                             label="Loading marketing sources..."
                                         />
                                     </div>
-                                ) : (
-                                    <span className='mt-5'>
-                                        Failed to load marketing sources. Please try again.
-                                    </span>
                                 )}
                             </div>
                         ) : (
@@ -314,7 +326,7 @@ export default function Page() {
                     </div>
 
                     {/* ── Pagination Control ───────────────────────────────────────────────────────────── */}
-                    {!shouldShowFullLoader && data && data?.items.length > 0 && (
+                    {!error && data && data?.items.length > 0 && (
                         <Pagination
                             currentPage={currentPage}
                             totalItems={data.meta.total}
@@ -340,7 +352,7 @@ export default function Page() {
                 editingMs={editingMarketingSource} />
 
             {/* ── Delete Confirmation Dialog ────────────────────────────────────────────────────────── */}
-            <DeleteMsDialog
+            < DeleteMsDialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}
                 msToDelete={marketingSourceToDelete}
