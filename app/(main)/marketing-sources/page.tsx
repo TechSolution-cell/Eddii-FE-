@@ -184,6 +184,7 @@ export default function Page() {
                 <CardContent className='mt-3'>
                     <FilterBar
                         defaultValues={filters}
+                        isDiabled={isFetching}
                         onChange={(v) => {
                             // reset to page 1 on filter change
                             if (currentPage !== 1) setCurrentPage(1);

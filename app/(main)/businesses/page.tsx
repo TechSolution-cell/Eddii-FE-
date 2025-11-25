@@ -186,6 +186,7 @@ export default function Page() {
           {/* ── Filter Bar ───────────────────────────────────────────────────────*/}
           <FilterBar
             defaultValues={filters}
+            isDisabled={isFetching}
             onChange={(v) => {
               // reset to page 1 on filter change
               if (currentPage !== 1) setCurrentPage(1);

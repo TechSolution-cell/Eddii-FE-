@@ -63,9 +63,10 @@ type Props = {
     defaultValues: Filters;
     onChange: (v: Filters) => void; // debounced change
     onClear?: () => void;
+    isDisabled?: boolean;
 };
 
-export function FilterBar({ defaultValues, onChange, onClear }: Props) {
+export function FilterBar({ defaultValues, onChange, onClear, isDisabled = false }: Props) {
     const form = useForm<Filters>({
         resolver: zodResolver(Schema),
         defaultValues,
@@ -96,6 +97,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                             <FormLabel>Number</FormLabel>
                             <FormControl>
                                 <Input
+                                    disabled={isDisabled}
                                     className='border-purple-200 focus:border-purple-500 h-10'
                                     {...field}
                                     placeholder="Search number..." />
@@ -112,6 +114,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                             <FormLabel>Forwarding Number</FormLabel>
                             <FormControl>
                                 <Input
+                                    disabled={isDisabled}
                                     className='border-purple-200 focus:border-purple-500 h-10'
                                     {...field}
                                     placeholder="Forwarding number..." />
@@ -120,7 +123,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                         </FormItem>
                     )}
                 />
-                <div>
+                <div className={cn(isDisabled && 'pointer-events-none')}>
                     <Label htmlFor="marketingSource" className="select-none">Marketing Source</Label>
                     <MarketingSourcePicker
                         value={form.watch("marketingSourceId")}
@@ -141,6 +144,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                 </div>
                 <div className={cn('flex gap-2', 'items-start translate-y-6')}>
                     <Button
+                        disabled={isDisabled}
                         type="button"
                         variant="outline"
                         className="border-purple-300 text-purple-600 hover:bg-purple-50"

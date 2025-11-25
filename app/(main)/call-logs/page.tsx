@@ -150,7 +150,6 @@ export default function Page() {
 
   return (
     <>
-      <div>wegweg : {isLoading ? 'shouldShow' : 'notShow'}</div>
       <Card className="border-purple-200 border bg-gradient-to-br from-white to-purple-50">
         {/* ── Header ───────────────────────────────────────────────────────────── */}
         <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
@@ -171,6 +170,7 @@ export default function Page() {
                 setLastAction('filter');
                 setFilters(v);
               }}
+              isDisabled={isFetching}
               onClear={() => {
                 setLastAction('filter');
                 setCurrentPage(1);

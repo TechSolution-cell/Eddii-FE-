@@ -18,9 +18,10 @@ type Props = {
     defaultValues: Filters;
     onChange: (v: Filters) => void; // debounced change
     onClear?: () => void;
+    isDiabled?: boolean;
 };
 
-export function FilterBar({ defaultValues, onChange, onClear }: Props) {
+export function FilterBar({ defaultValues, onChange, onClear, isDiabled = false }: Props) {
     const form = useForm<Filters>({ resolver: zodResolver(Schema), defaultValues });
     const debounced = useDebouncedCallback((values: Filters) => onChange(values), 400);
 
@@ -41,7 +42,8 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                                 <Input
-                                className='border-purple-200 focus:border-purple-500 h-10'
+                                    disabled={isDiabled}
+                                    className='border-purple-200 focus:border-purple-500 h-10'
                                     {...field}
                                     placeholder="Search name..." />
                             </FormControl>
@@ -56,6 +58,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                             <FormLabel>Channel</FormLabel>
                             <FormControl>
                                 <Input
+                                    disabled={isDiabled}
                                     className='border-purple-200 focus:border-purple-500 h-10'
                                     {...field}
                                     placeholder="e.g. Google / Facebook"
@@ -73,6 +76,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                             <FormLabel>Campaign</FormLabel>
                             <FormControl>
                                 <Input
+                                    disabled={isDiabled}
                                     className='border-purple-200 focus:border-purple-500 h-10'
                                     {...field}
                                     placeholder="Campaign name..."
@@ -85,6 +89,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                     <Button
                         type="button"
                         variant="outline"
+                        disabled={isDiabled}
                         className="border-purple-300 text-purple-600 hover:bg-purple-50"
                         onClick={() => {
                             form.reset({

@@ -9,6 +9,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 
 // ── App utilities / hooks / state ────────────────────────────────────
+import { cn } from '@/lib/utils';
 
 // ── UI (radix + icons) ───────────────────────────────────────────────
 import { Form } from '@/components/ui/form';
@@ -26,9 +27,10 @@ type Props = {
     defaultValues: Filters;
     onChange: (v: Filters) => void; // debounced change
     onClear?: () => void;
+    isDisabled?: boolean
 };
 
-export function FilterBar({ defaultValues, onChange }: Props) {
+export function FilterBar({ defaultValues, onChange, isDisabled }: Props) {
 
     const form = useForm<Filters>({
         resolver: zodResolver(Schema),
@@ -51,8 +53,8 @@ export function FilterBar({ defaultValues, onChange }: Props) {
 
     return (
         <Form {...form}>
-            <form className="flex sm:flex-row flex-col gap-3 items-center">
-                <div className='w-80'>
+            <form className={cn("flex sm:flex-row flex-col gap-3 items-center", isDisabled && "pointer-events-none")}>
+                <div className='w-80 '>
                     {/* <Label htmlFor="marketingSource" className="select-none">Marketing Source</Label> */}
                     <MarketingSourcePicker
                         value={form.watch("marketingSourceId")}

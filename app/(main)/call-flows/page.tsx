@@ -143,7 +143,6 @@ const Page = () => {
 
   return (
     <>
-      <div>wegweg : {isLoading ? 'shouldShow' : 'notShow'}</div>
       <Card className="border-purple-200 border bg-gradient-to-br from-white to-purple-50">
         {/* ── Header ───────────────────────────────────────────────────────────── */}
         <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
@@ -169,6 +168,7 @@ const Page = () => {
           {/* ── Filter Bar ───────────────────────────────────────────────────────*/}
           <FilterBar
             defaultValues={filters}
+            isDisabled={isFetching}
             onChange={(v) => {
               // reset to page 1 on filter change
               if (currentPage !== 1) setCurrentPage(1);

@@ -29,9 +29,10 @@ type Props = {
     defaultValues: Filters;
     onChange: (v: Filters) => void; // debounced change
     onClear?: () => void;
+    isDisabled?: boolean;
 };
 
-export function FilterBar({ defaultValues, onChange, onClear }: Props) {
+export function FilterBar({ defaultValues, onChange, onClear, isDisabled = false }: Props) {
     const form = useForm<Filters>({
         // @ts-expect-error -- zodResolver type inference mismatch with RHF resolver generic in our setup
         resolver: zodResolver(Schema),
@@ -67,6 +68,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                                 <Input
+                                    disabled={isDisabled}
                                     className='border-purple-200 focus:border-purple-500'
                                     {...field}
                                     placeholder="Search name..." />
@@ -82,6 +84,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                             <FormLabel>Email</FormLabel>
                             <FormControl>
                                 <Input
+                                    disabled={isDisabled}
                                     className='border-purple-200 focus:border-purple-500'
                                     {...field}
                                     placeholder="Email..." />
@@ -92,6 +95,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                 />
                 <div className={cn('flex gap-2', Object.keys(form.formState.errors).length ? 'items-center' : 'items-end')}>
                     <Button
+                        disabled={isDisabled}
                         type="button"
                         variant="outline"
                         className="border-purple-300 text-purple-600 hover:bg-purple-50"
