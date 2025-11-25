@@ -1,5 +1,5 @@
 // ── App utilities / hooks / state ────────────────────────────────────
-import { fmt } from '@/lib/utils';
+import { fmt, formatLanguage } from '@/lib/utils';
 import { useRecordingUrl, RecordingUrlResponse } from '@/features/call-logs/api';
 
 // ── UI (radix + icons) ───────────────────────────────────────────────
@@ -20,6 +20,7 @@ import {
     Repeat2,
     HelpCircle,
     MinusCircle,
+    Globe2
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -352,9 +353,19 @@ export function CallLogDetailDialog({ log, open, onClose }: CallLogDetailDialogP
                     {/* RIGHT SIDE — Transcript */}
                     <Card className="border-purple-200">
                         <CardContent className="p-3 h-full">
-                            <Label className="text-sm text-purple-600 mb-3 block">
-                                Call Transcription
-                            </Label>
+                            <div className="flex items-center justify-between mb-3">
+                                <Label className="text-sm text-purple-600 block">
+                                    Call Transcription
+                                </Label>
+                                {log.transcriptJson?.language && (
+                                    <div className="flex items-center gap-1 text-xs text-purple-700">
+                                        <Globe2 className="w-3 h-3" />
+                                        <span>
+                                            {formatLanguage(log.transcriptJson.language)}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
 
                             {log.transcriptJson?.turns ? (
                                 <div className="bg-purple-50 p-4 rounded-lg max-h-96 overflow-y-auto">

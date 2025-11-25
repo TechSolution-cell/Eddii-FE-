@@ -126,3 +126,20 @@ export function fmtPhone(num: string): string {
   return digits;
 }
 export const fmt = fmtPhone;
+
+// map short language codes to nicer labels
+export const formatLanguage = (lang?: string | null) => {
+  if (!lang) return 'Unknown';
+
+  const map: Record<string, string> = {
+    en: 'English',
+    fr: 'French',
+    es: 'Spanish',
+    de: 'German',
+    it: 'Italian',
+    pt: 'Portuguese',
+  };
+
+  const normalized = lang.toLowerCase();
+  return map[normalized] ?? lang.toUpperCase();
+};
