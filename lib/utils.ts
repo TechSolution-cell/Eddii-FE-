@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -82,8 +81,10 @@ export function buildChangedPayload<T extends Record<string, any>>(
 // Treat "" as undefined, keep proper output typing (string | undefined)
 export const textUpdateField = (schema: z.ZodString = z.string()) =>
   z.preprocess(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (v: any) => (typeof v === "string" && v === "" ? undefined : v),
     schema.optional()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as any as z.ZodType<string | undefined>;
 
 

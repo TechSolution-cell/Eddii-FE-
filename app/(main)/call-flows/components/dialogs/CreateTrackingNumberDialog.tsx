@@ -149,7 +149,7 @@ export function CreateTrackingNumberDialog({ open, onOpenChange, onCreateSucess 
 
   // ───────────────────────────  Handlers  ───────────────────────────────────────
   const handleCreate = async (values: CreateValues) => {
-    if (!errors) return;
+    if (Object.keys(errors).length > 0) return;
 
     try {
       await provision.mutateAsync(
@@ -179,14 +179,11 @@ export function CreateTrackingNumberDialog({ open, onOpenChange, onCreateSucess 
 
   // Reset the form when a dialog is opens
   useEffect(() => {
-    if (open) {
-      reset();
-    }
-  }, [open]);
+    if (!open) return;
 
+    reset();
+  }, [open, reset]);
 
-  // const isSubmittingLike =
-  //   provision.isPending || msLoading || (areaCode.length === 3 && isFetchingNumbers);
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>

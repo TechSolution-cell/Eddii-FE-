@@ -64,7 +64,7 @@ export default function EditMsDialog({ open, onOpenChange, onEditSuccess, editin
                 description: editingMs?.description ?? ''
             });
         }
-    }, [open]);
+    }, [open, editingMs, editForm]);
 
     const handleUpdate = async (values: UpdateValues) => {
         if (!editingMs?.id || updateMarketingSource.isPending) return;

@@ -85,16 +85,16 @@ const EditBusinessDialog = ({ open, onOpenChange, editingBusiness }: EditBusines
 
     // Reset Form when a dialog opens
     useEffect(() => {
-        if (editingBusiness) {
-            editForm.reset({
-                email: editingBusiness.email,
-                businessName: editingBusiness.businessName,
-                maxTrackingNumbers: editingBusiness.maxTrackingNumbers,
-                password: '',
-                passwordConfirmation: ''
-            })
-        }
-    }, [open]);
+        if (!open || !editingBusiness) return;
+
+        editForm.reset({
+            email: editingBusiness.email,
+            businessName: editingBusiness.businessName,
+            maxTrackingNumbers: editingBusiness.maxTrackingNumbers,
+            password: '',
+            passwordConfirmation: ''
+        });
+    }, [open, editingBusiness, editForm]);
 
     const handleUpdate = async (values: UpdateValues) => {
         if (!editingBusiness?.id) return;
@@ -203,7 +203,7 @@ const EditBusinessDialog = ({ open, onOpenChange, editingBusiness }: EditBusines
                                             <Input
                                                 {...field}
                                                 placeholder='Enter a password...'
-                                                type={isConfirmPasswordVisible ? "text" : "password"}
+                                                type={isPasswordVisible ? "text" : "password"}
                                                 autoComplete='new-password-1'
                                                 spellCheck={false}
                                                 autoCorrect="off"
@@ -216,7 +216,7 @@ const EditBusinessDialog = ({ open, onOpenChange, editingBusiness }: EditBusines
                                                 variant="ghost"
                                                 size="sm"
                                                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
+                                                onClick={() => setIsConfirmPasswordVisible(!isPasswordVisible)}
                                             >
                                                 {isConfirmPasswordVisible ? (
                                                     <EyeOff className="h-4 w-4" />
@@ -241,7 +241,7 @@ const EditBusinessDialog = ({ open, onOpenChange, editingBusiness }: EditBusines
                                             <Input
                                                 {...field}
                                                 placeholder='Cofirm password...'
-                                                type={isPasswordVisible ? "text" : "password"}
+                                                type={isConfirmPasswordVisible ? "text" : "password"}
                                                 autoComplete='new-password-1'
                                                 spellCheck={false}
                                                 autoCorrect="off"
@@ -254,7 +254,7 @@ const EditBusinessDialog = ({ open, onOpenChange, editingBusiness }: EditBusines
                                                 variant="ghost"
                                                 size="sm"
                                                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                                                onClick={() => setIsPasswordVisible(!isConfirmPasswordVisible)}
                                             >
                                                 {isPasswordVisible ? (
                                                     <EyeOff className="h-4 w-4" />

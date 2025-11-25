@@ -29,6 +29,12 @@ function useDebouncedValue<T>(value: T, delay = 300) {
     return debounced;
 }
 
+const noneOption: MarketingSource = {
+    id: '#',
+    name: "No marketing source",
+    description: "Do not attribute this to a marketing source",
+};
+
 export function MarketingSourcePicker({
     value,
     onChange,
@@ -49,12 +55,6 @@ export function MarketingSourcePicker({
     const [search, setSearch] = useState('');
     const debounced = useDebouncedValue(search, 250);
 
-    const noneOption: MarketingSource = {
-        id: '#',
-        name: "No marketing source",
-        description: "Do not attribute this to a marketing source",
-    };
-
     const [page, setPage] = useState(1);
     const [items, setItems] = useState<MarketingSource[]>([noneOption]);
     const [total, setTotal] = useState<number | null>(null);
@@ -72,7 +72,7 @@ export function MarketingSourcePicker({
         setItems(includeNoneOption ? [noneOption] : []);
         setTotal(null);
 
-    }, [debounced]);
+    }, [debounced, includeNoneOption]);
 
     // Append new page when data changes
     useEffect(() => {
@@ -94,7 +94,7 @@ export function MarketingSourcePicker({
             return Array.from(byId.values());
         });
         setTotal(data.meta.total);
-    }, [data, page]);
+    }, [data, page, includeNoneOption]);
 
     const baseCount = includeNoneOption ? items.length - 1 : items.length;
     const selectedItem = useMemo(() => items.find((i) => String(i.id) === value), [items, value]);

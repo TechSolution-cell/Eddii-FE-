@@ -97,11 +97,17 @@ export function DateRangePicker({
   presetLabels,
   showSearch = true,
 }: DateRangePickerProps) {
+
   const [isOpen, setIsOpen] = useState(false);
-  const labelMap: Record<PresetType, string> = {
-    ...DEFAULT_LABELS,
-    ...(presetLabels || {}),
-  } as Record<PresetType, string>;
+  
+  const labelMap = useMemo(
+    () =>
+    ({
+      ...DEFAULT_LABELS,
+      ...(presetLabels || {}),
+    } as Record<PresetType, string>),
+    [presetLabels]
+  );
 
   const finalVisible = useMemo<PresetType[]>(() => {
     const base = (
@@ -204,7 +210,7 @@ export function DateRangePicker({
           {/* Left sidebar with presets */}
           {/*w-48* */}
           <div
-            className={`w-52 border-r bg-muted !border-[#e5e7eb] ${selectedPreset !== "custom" ? "min-w-52" : ""}`} 
+            className={`w-52 border-r bg-muted !border-[#e5e7eb] ${selectedPreset !== "custom" ? "min-w-52" : ""}`}
           >
             {showSearch && (
               <div className="p-3 border-b bg-white">

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { toast } from 'sonner';
 import type { ExternalToast } from 'sonner';
 

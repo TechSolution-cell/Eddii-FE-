@@ -9,12 +9,9 @@ import { useDebouncedCallback } from 'use-debounce';
 import { subDays, startOfDay, endOfDay } from 'date-fns';
 
 // ── App utilities / hooks / state ────────────────────────────────────
-import { cn } from '@/lib/utils';
 
 // ── UI (radix + icons) ───────────────────────────────────────────────
-import { Label } from "@/components/ui/label";
-import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { MarketingSourcePicker } from '../../call-flows/components/MarketingSourcePicker';
 import { DateRangePicker, DateRange } from '@/components/DateRangePicker';
 
@@ -31,7 +28,7 @@ type Props = {
     onClear?: () => void;
 };
 
-export function FilterBar({ defaultValues, onChange, onClear }: Props) {
+export function FilterBar({ defaultValues, onChange }: Props) {
 
     const form = useForm<Filters>({
         resolver: zodResolver(Schema),

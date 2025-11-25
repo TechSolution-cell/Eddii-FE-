@@ -60,7 +60,7 @@ export default function CreateMsDialog({ open, onOpenChange, onCreateSuccess }: 
                 campaignName: ''
             });
         }
-    }, [open]);
+    }, [open, createForm]);
 
     const handleCreate = async (values: CreateValues) => {
         try {

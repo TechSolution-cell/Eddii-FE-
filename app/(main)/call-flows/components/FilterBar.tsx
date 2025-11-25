@@ -130,6 +130,7 @@ export function FilterBar({ defaultValues, onChange, onClear }: Props) {
                                 shouldDirty: true,
                             })
                         }
+                        includeNoneOption={true}
                         placeholder="Select marketing source"
                     />
                     {/* {form.formState.errors.marketingSourceId && (
