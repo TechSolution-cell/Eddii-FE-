@@ -44,7 +44,8 @@ const navigationItems: NavigationItem[] = [
     id: 'home',
     name: 'Home',
     icon: Home,
-    href: '/home'
+    href: '/home',
+    allowedRoles: ['BUSINESS_ADMIN']
   },
   {
     id: 'marketing-sources',

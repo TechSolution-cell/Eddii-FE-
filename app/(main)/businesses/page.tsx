@@ -17,14 +17,14 @@ import { Spinner } from '@/components/ui/spinner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination } from '@/components/Pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import CreateBusinessDialog from './components/dialogs/CreateBusinessDialog';
 import EditBusinessDialog from './components/dialogs/EditBusinessDialog';
 import { FilterBar, type Filters } from './components/FilterBar';
 
 // ── Types ─────────────────────────────────────────────────────────────
 import { Business, Paginated } from '@/types';
-import DeleteBusinessDialog from './components/dialogs/DeleteBusinessDialog';
+// import DeleteBusinessDialog from './components/dialogs/DeleteBusinessDialog';
 
 type LastAction = 'page' | 'limit' | 'filter' | 'other' | null;
 
@@ -95,11 +95,11 @@ export default function Page() {
 
 
   const [editingBiz, setEditingBiz] = useState<Business | null>(null);
-  const [bizToDelete, setBizToDelete] = useState<Business | null>(null);
+  // const [bizToDelete, setBizToDelete] = useState<Business | null>(null);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  // const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Reset lastAction when network settles (after the useMarketingSources hook)
   useEffect(() => {
@@ -146,10 +146,10 @@ export default function Page() {
   }
 
   {/* ── Handlers for deleting ──────────────────────────────────────────────────────*/ }
-  const handleDeleteClick = (b: Business) => {
-    setBizToDelete(b);
-    setIsDeleteDialogOpen(true);
-  }
+  // const handleDeleteClick = (b: Business) => {
+  //   setBizToDelete(b);
+  //   setIsDeleteDialogOpen(true);
+  // }
 
   /* Loading flags:
       - shouldShowFullLoader: initial load or filter fetch (hide table)
@@ -265,7 +265,7 @@ export default function Page() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
+                          {/* <Button
                             type="button"
                             variant="outline"
                             size="sm"
@@ -274,7 +274,7 @@ export default function Page() {
                             disabled={isDeleteDialogOpen}
                           >
                             <Trash2 className="h-4 w-4" />
-                          </Button>
+                          </Button> */}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -340,11 +340,11 @@ export default function Page() {
         editingBusiness={editingBiz} />
 
       {/* ── Delete Confirmation Dialog ───────────────────────────────────────────────────────────── */}
-      <DeleteBusinessDialog
+      {/* <DeleteBusinessDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         businessToDelete={bizToDelete}
-      />
+      /> */}
     </>
   );
 }

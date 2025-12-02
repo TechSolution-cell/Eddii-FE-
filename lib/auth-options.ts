@@ -32,7 +32,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         const refreshed = await res.json()
         const decoded = jwtDecode<JwtPayload>(refreshed.access_token);
         const accessTokenExpires = decoded?.exp ? decoded.exp * 1000 : Date.now() + 14 * 60 * 1000; // Default 14 mins
-        console.log('not expired' + Math.floor(Math.random() * 100000000))
+        // console.log('not expired' + Math.floor(Math.random() * 100000000))
         return {
             ...token,
             accessToken: refreshed.access_token,
@@ -41,7 +41,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
         }
     } catch (e: unknown) {
         console.log(e instanceof Error ? e.message : e)
-        console.log('RefreshAccessTokenError')
+        console.log('RefreshAccessTokenError');
         return { ...token, error: "RefreshAccessTokenError" }
     }
 }

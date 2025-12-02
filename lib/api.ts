@@ -25,7 +25,7 @@ export class ApiError extends Error {
 async function getValidSessionOrSignOut() {
     const session = await getSession();
 
-    // If NextAuth indicates the refresh failed, we sign out immediately.
+    // If NextAuth indicates the refresh failed, sign out immediately.
     if (session?.error === 'RefreshAccessTokenError') {
         await signOut({ callbackUrl: '/auth/login' });
         throw new ApiError('Session expired. Please sign in again.', {
