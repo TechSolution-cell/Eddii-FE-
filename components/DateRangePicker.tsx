@@ -1,7 +1,7 @@
 "use client";
 
-// ── React & libs ──────────────────────────────────────────────────────
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import {
   format,
   subDays,
@@ -11,16 +11,10 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
-
-
-// ── UI (radix + icons) ───────────────────────────────────────────────
-import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-
-// ── Types ───────────────────────────────────────────────
 import { DateRange as ReactDayPickerRange } from "react-day-picker";
 
 export interface DateRange {
@@ -42,22 +36,9 @@ export type PresetType =
 interface DateRangePickerProps {
   dateRange: DateRange;
   onDateRangeChange: (range: DateRange) => void;
-  /**
-   * Control which presets are displayed (and in what order).
-   * Defaults to a sensible set if not provided.
-   */
   visiblePresets?: PresetType[];
-  /**
-   * Choose which preset is initially selected. Must be included in visiblePresets.
-   * Falls back to the first visible preset (or "custom" if none).
-   */
   initialPreset?: PresetType;
-  /**
-   * Override labels for any preset.
-   * Example: { last30days: "Past 30 Days" }
-   */
   presetLabels?: Partial<Record<PresetType, string>>;
-  /** Show the search box that filters presets. Default: true */
   showSearch?: boolean;
 }
 
@@ -95,6 +76,34 @@ const DEFAULT_LABELS: Record<PresetType, string> = {
   custom: "Custom Range",
 };
 
+function computePresetRange(
+  preset: Exclude<PresetType, "custom">,
+  now: Date
+): DateRange {
+  switch (preset) {
+    case "today":
+      return { from: startOfDay(now), to: endOfDay(now) };
+    case "yesterday": {
+      const yesterday = subDays(now, 1);
+      return { from: startOfDay(yesterday), to: endOfDay(yesterday) };
+    }
+    case "last7days":
+      return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
+    case "last30days":
+      return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
+    case "last90days":
+      return { from: startOfDay(subDays(now, 89)), to: endOfDay(now) };
+    case "last180days":
+      return { from: startOfDay(subDays(now, 179)), to: endOfDay(now) };
+    case "thismonth":
+      return { from: startOfMonth(now), to: endOfMonth(now) };
+    case "lastmonth": {
+      const lastMonth = subMonths(now, 1);
+      return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
+    }
+  }
+}
+
 export function DateRangePicker({
   dateRange,
   onDateRangeChange,
@@ -103,7 +112,6 @@ export function DateRangePicker({
   presetLabels,
   showSearch = true,
 }: DateRangePickerProps) {
-
   const [isOpen, setIsOpen] = useState(false);
 
   const labelMap = useMemo(
@@ -131,38 +139,14 @@ export function DateRangePicker({
   const [customRange, setCustomRange] = useState<DateRange>(dateRange);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const getPresetRange = (preset: PresetType): DateRange => {
+  // Helper that uses customRange only for "custom"
+  const getRangeForPreset = (preset: PresetType): DateRange => {
+    if (preset === "custom") return customRange;
     const now = new Date();
-    switch (preset) {
-      case "today":
-        return { from: startOfDay(now), to: endOfDay(now) };
-      case "yesterday": {
-        const yesterday = subDays(now, 1);
-        return { from: startOfDay(yesterday), to: endOfDay(yesterday) };
-      }
-      case "last7days":
-        return { from: startOfDay(subDays(now, 6)), to: endOfDay(now) };
-      case "last30days":
-        return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
-      case "last90days":
-        return { from: startOfDay(subDays(now, 89)), to: endOfDay(now) };
-      case "last180days": {
-        return { from: startOfDay(subDays(now, 179)), to: endOfDay(now) };
-      }
-      case "thismonth":
-        return { from: startOfMonth(now), to: endOfMonth(now) };
-      case "lastmonth": {
-        const lastMonth = subMonths(now, 1);
-        return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
-      }
-      case "custom":
-        return customRange;
-      default:
-        return { from: startOfDay(subDays(now, 29)), to: endOfDay(now) };
-    }
+    return computePresetRange(preset as Exclude<PresetType, "custom">, now);
   };
 
-  // Keep selectedPreset & customRange in sync with external dateRange
+  // 🔧 keep selectedPreset & customRange in sync with external dateRange
   useEffect(() => {
     const { from, to } = dateRange;
 
@@ -173,13 +157,16 @@ export function DateRangePicker({
       return;
     }
 
-    // Try to match one of the visible presets (except "custom")
+    const now = new Date();
     let matchedPreset: PresetType | null = null;
 
     for (const preset of finalVisible) {
       if (preset === "custom") continue;
 
-      const presetRange = getPresetRange(preset);
+      const presetRange = computePresetRange(
+        preset as Exclude<PresetType, "custom">,
+        now
+      );
       if (!presetRange.from || !presetRange.to) continue;
 
       if (
@@ -198,7 +185,7 @@ export function DateRangePicker({
   const handlePresetSelect = (preset: PresetType) => {
     setSelectedPreset(preset);
     if (preset !== "custom") {
-      const range = getPresetRange(preset);
+      const range = getRangeForPreset(preset);
       setCustomRange(range);
       onDateRangeChange(range);
       setIsOpen(false);
@@ -206,7 +193,8 @@ export function DateRangePicker({
   };
 
   const handleApply = () => {
-    const range = selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset);
+    const range =
+      selectedPreset === "custom" ? customRange : getRangeForPreset(selectedPreset);
     onDateRangeChange(range);
     setIsOpen(false);
   };
@@ -237,23 +225,25 @@ export function DateRangePicker({
   );
 
   const effectiveRange =
-    selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset);
+    selectedPreset === "custom" ? customRange : getRangeForPreset(selectedPreset);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="justify-start text-left font-normal min-w-52 h-10">
+        <Button
+          variant="outline"
+          className="justify-start text-left font-normal min-w-52 h-10"
+        >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {/* {formatDateRange(selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset))} */}
           {formatDateRange(effectiveRange)}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-0 rounded-xl w-" align="start">
+      <PopoverContent className="w-auto p-0 border-0 rounded-xl" align="start">
         <div className="flex">
           {/* Left sidebar with presets */}
-          {/*w-48* */}
           <div
-            className={`w-52 border-r bg-muted !border-[#e5e7eb] ${selectedPreset !== "custom" ? "min-w-52" : ""}`}
+            className={`w-52 border-r bg-muted !border-[#e5e7eb] ${selectedPreset !== "custom" ? "min-w-52" : ""
+              }`}
           >
             {showSearch && (
               <div className="p-3 border-b bg-white">
@@ -279,7 +269,7 @@ export function DateRangePicker({
             </div>
           </div>
 
-          {/* Right side with calendar or custom range */}
+          {/* Right side with calendar for custom range */}
           {selectedPreset === "custom" ? (
             <div className="p-4">
               <div className="space-y-4">
@@ -288,14 +278,22 @@ export function DateRangePicker({
                   <div className="flex items-center space-x-2 mt-2">
                     <Input
                       placeholder="Start date"
-                      value={customRange.from ? format(customRange.from, "MM/dd/yyyy") : ""}
+                      value={
+                        customRange.from
+                          ? format(customRange.from, "MM/dd/yyyy")
+                          : ""
+                      }
                       readOnly
                       className="w-32"
                     />
                     <span>-</span>
                     <Input
                       placeholder="End date"
-                      value={customRange.to ? format(customRange.to, "MM/dd/yyyy") : ""}
+                      value={
+                        customRange.to
+                          ? format(customRange.to, "MM/dd/yyyy")
+                          : ""
+                      }
                       readOnly
                       className="w-32"
                     />
@@ -305,15 +303,20 @@ export function DateRangePicker({
                   mode="range"
                   className="w-[500px]"
                   selected={customRange as ReactDayPickerRange}
-                  onSelect={(range: ReactDayPickerRange | undefined) => setCustomRange(range || {})}
+                  onSelect={(range: ReactDayPickerRange | undefined) =>
+                    setCustomRange(range || {})
+                  }
                   numberOfMonths={2}
                 />
               </div>
 
-              {/* Action buttons */}
               <div className="flex justify-between mt-4 pt-4 border-t !border-[#e5e7eb]">
                 <span className="text-xs text-muted-foreground">
-                  {formatDateRange(selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset))}
+                  {formatDateRange(
+                    selectedPreset === "custom"
+                      ? customRange
+                      : getRangeForPreset(selectedPreset)
+                  )}
                 </span>
                 <div className="space-x-2">
                   <Button variant="outline" size="sm" onClick={handleCancel}>
@@ -331,13 +334,3 @@ export function DateRangePicker({
     </Popover>
   );
 }
-
-// --- Example usage ---
-// <DateRangePicker
-//   dateRange={{}}
-//   onDateRangeChange={(r) => console.log(r)}
-//   visiblePresets={["last7days", "last30days", "last90days", "custom"]}
-//   initialPreset="last30days"
-//   presetLabels={{ last30days: "Past 30 Days", last90days: "Quarter to Date" }}
-//   showSearch={false}
-// />
