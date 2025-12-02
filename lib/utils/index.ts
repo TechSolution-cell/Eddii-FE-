@@ -146,3 +146,4 @@ export const formatLanguage = (lang?: string | null) => {
 
 
 export * from './number';
+export * from './date';

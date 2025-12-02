@@ -8,6 +8,7 @@ import { subDays, startOfDay, endOfDay } from 'date-fns';
 // ── App utilities / hooks / state ────────────────────────────────────
 import { cn, fmt } from '@/lib/utils';
 import { useCallLogs } from '@/features/call-logs/api';
+import { serializeDateParam, parseDateParam } from "@/lib/utils";
 
 
 // ── UI (radix + icons) ───────────────────────────────────────────────
@@ -33,15 +34,7 @@ type FiltersWithPagination = Filters & {
   limit?: number;
 };
 
-const serializeDate = (date?: Date | null) =>
-  date ? date.toISOString() : undefined;
 
-// Safely parse, return undefined on bad value
-const parseDate = (value: string | null) => {
-  if (!value) return undefined;
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? undefined : d;
-};
 
 function useUrlFilters(): [FiltersWithPagination, (f: FiltersWithPagination) => void, () => void] {
   const router = useRouter();
@@ -49,8 +42,8 @@ function useUrlFilters(): [FiltersWithPagination, (f: FiltersWithPagination) => 
 
   const current: FiltersWithPagination = {
     marketingSourceId: sp.get('marketingSourceId') ?? '',
-    from: parseDate(sp.get('from')) ?? startOfDay(subDays(new Date(), 29)),
-    to: parseDate(sp.get('to')) ?? endOfDay(new Date()),
+    from: parseDateParam(sp.get('from')) ?? startOfDay(subDays(new Date(), 29)),
+    to: parseDateParam(sp.get('to')) ?? endOfDay(new Date()),
 
     page: sp.get('page') ? Number(sp.get('page')) : 1,
     limit: sp.get('limit') ? Number(sp.get('limit')) : 25,
@@ -63,12 +56,12 @@ function useUrlFilters(): [FiltersWithPagination, (f: FiltersWithPagination) => 
     if (f.marketingSourceId) q.set('marketingSourceId', f.marketingSourceId);
 
     if (f.from) {
-      const serializedFrom = serializeDate(f.from);
+      const serializedFrom = serializeDateParam(f.from);
       if (serializedFrom) q.set('from', serializedFrom);
     }
 
     if (f.to) {
-      const serializedTo = serializeDate(f.to);
+      const serializedTo = serializeDateParam(f.to);
       if (serializedTo) q.set('to', serializedTo);
     }
 
@@ -106,8 +99,8 @@ export default function Page() {
       isFetching: boolean
     } = useCallLogs({
       marketingSourceId: filters.marketingSourceId,
-      startedFrom: serializeDate(filters.from),
-      startedTo: serializeDate(filters.to),
+      startedFrom: serializeDateParam(filters.from),
+      startedTo: serializeDateParam(filters.to),
       page: currentPage,
       limit: itemsPerPage
       // sortBy, sortOrder if needed

@@ -2,10 +2,12 @@
 
 // ── React & libs ──────────────────────────────────────────────────────
 import { useState } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
 import { subDays, startOfDay, endOfDay } from "date-fns";
 
 // ── App utilities / hooks / state ────────────────────────────────────
 import { useDashboard } from "@/features/dashboard/api";
+import { serializeDateParam, parseDateParam } from "@/lib/utils";
 
 // ── UI (radix + icons) ───────────────────────────────────────────────
 import { MetricCard } from '@/app/(main)/home/components/MetricsCard';
@@ -16,14 +18,61 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 // ── types ───────────────────────────────────────────────
 import type { DateRange } from "@/components/DateRangePicker";
 
+
+interface Filters {
+  from?: Date;
+  to?: Date;
+
+  marketingSourceIds?: string[];
+}
+
+
+function useUrlFilters(): [Filters, (f: Filters) => void, () => void] {
+  const router = useRouter();
+  const sp = useSearchParams();
+
+  const current: Filters = {
+    marketingSourceIds: sp.get('marketingSourceId') ? sp.get('marketingSourceId')?.split(',') : [],
+    from: parseDateParam(sp.get('from')) ?? startOfDay(subDays(new Date(), 29)),
+    to: parseDateParam(sp.get('to')) ?? endOfDay(new Date()),
+  };
+
+  const setFilters = (f: Filters) => {
+    const q = new URLSearchParams();
+
+    if (f?.from) {
+      const fromStr = serializeDateParam(f.from);
+      if (fromStr) q.set('from', fromStr);
+    }
+    if (f?.to) {
+      const toStr = serializeDateParam(f.to);
+      if (toStr) q.set('to', toStr);
+    }
+
+    if (f?.marketingSourceIds && f.marketingSourceIds.length > 0) {
+      const ids = f.marketingSourceIds.map(String).join(",");
+      q.set("marketingSourceId", ids);
+    }
+
+    router.replace(`?${q.toString()}`, { scroll: false });
+  };
+
+  const clear = () => router.replace('?', { scroll: false });
+
+  return [current, setFilters, clear];
+}
+
+
 const Home = () => {
 
+  const [filters, setFilters, _clearFilters] = useUrlFilters();
+
   const [dateRange, setDateRange] = useState<DateRange>({
-    from: startOfDay(subDays(new Date(), 29)),
-    to: endOfDay(new Date()),
+    from: filters.from,
+    to: filters.to,
   });
 
-  const [marketingSourceIds, setMarketingSourceIds] = useState<string[]>([]);
+  const [marketingSourceIds, setMarketingSourceIds] = useState<string[]>(filters?.marketingSourceIds ?? []);
 
   const { data, isLoading, isError } = useDashboard({
     from: dateRange.from?.toISOString(),
@@ -31,6 +80,25 @@ const Home = () => {
     marketingSourceIds
     // groupBy: undefined,
   });
+
+  const handleDateRangeChange = (range: DateRange) => {
+    setDateRange(range);
+
+    setFilters({
+      ...filters,
+      from: range.from,
+      to: range.to
+    })
+  }
+
+  const handleMarketingSourceIdsChange = (ids: string[]) => {
+    setMarketingSourceIds(ids);
+
+    setFilters({
+      ...filters,
+      marketingSourceIds: ids
+    });
+  }
 
   const summary = data?.summary;
 
@@ -84,9 +152,9 @@ const Home = () => {
         {/* Chart Section */}
         <ChartCard
           dateRange={dateRange}
-          onDateRangeChange={setDateRange}
+          onDateRangeChange={handleDateRangeChange}
           marketingSourceIds={marketingSourceIds}
-          onMarketingSourcesChange={setMarketingSourceIds}
+          onMarketingSourcesChange={handleMarketingSourceIdsChange}
           chartPoints={data?.chart.points ?? []}
           groupBy={data?.chart.groupBy ?? 'day'}
           isLoading={isLoading}
