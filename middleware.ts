@@ -1,12 +1,25 @@
 import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server";
 
-
 import type { Role } from "./types";
-const INITIAL_ROUTE = "/home";
+
+// const INITIAL_ROUTE = "/home";
+
+const SUPER_ADMIN_INITIAL_ROUTE = "/businesses";
+const BUSINESS_ADMIN_INITIAL_ROUTE = "/home";
+
+function getInitialRoute(userRoles: Role[]) {
+    // If user has SUPER_ADMIN, send them to /businesses
+    if (userRoles.includes("SUPER_ADMIN")) {
+        return SUPER_ADMIN_INITIAL_ROUTE;
+    }
+
+    // Default for others (e.g. BUSINESS_ADMIN)
+    return BUSINESS_ADMIN_INITIAL_ROUTE;
+}
 
 const RBAC: Array<{ pattern: RegExp; roles: Role[] }> = [
-    { pattern: /^\/home(?:\/.*)?$/i, roles: ["SUPER_ADMIN", "BUSINESS_ADMIN"] },
+    { pattern: /^\/home(?:\/.*)?$/i, roles: ["BUSINESS_ADMIN"] },
 
     { pattern: /^\/businesses(?:\/.*)?$/i, roles: ["SUPER_ADMIN"] },
 
@@ -37,9 +50,11 @@ export default withAuth(function middleware(req) {
     const { token } = req.nextauth;
     const url = req.nextUrl;
 
+    const roles = token ? getUserRoles(token) : [];
+
     // If the user is signed in and tries to visit the login page, send them to INITIAL_ROUTE
     if (token && url.pathname === "/auth/login") {
-        url.pathname = INITIAL_ROUTE;
+        url.pathname = getInitialRoute(roles);
         return NextResponse.redirect(url);
     }
 
@@ -47,7 +62,13 @@ export default withAuth(function middleware(req) {
     // - Visiting "/" sends authed users to INITIAL_ROUTE
     // - Visiting "/" sends unauthenticated users to the login page
     if (url.pathname === "/") {
-        url.pathname = token ? INITIAL_ROUTE : "/auth/login";
+        url.pathname = token ? getInitialRoute(roles) : "/auth/login";
+        return NextResponse.redirect(url);
+    }
+
+    // Optional: normalize SUPER_ADMIN hitting "/home" (e.g. from callbackUrl)
+    if (token && roles.includes("SUPER_ADMIN") && url.pathname === "/home") {
+        url.pathname = "/businesses";
         return NextResponse.redirect(url);
     }
 

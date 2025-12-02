@@ -1,4 +1,3 @@
-// Login page component with form validation
 'use client';
 
 import { useState } from 'react';
