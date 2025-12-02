@@ -124,6 +124,7 @@ export function ChartCard({
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={handleDateRangeChange}
+            initialPreset='last7days'
             visiblePresets={[
               "last7days",
               "last30days",

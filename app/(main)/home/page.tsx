@@ -33,7 +33,7 @@ function useUrlFilters(): [Filters, (f: Filters) => void, () => void] {
 
   const current: Filters = {
     marketingSourceIds: sp.get('marketingSourceId') ? sp.get('marketingSourceId')?.split(',') : [],
-    from: parseDateParam(sp.get('from')) ?? startOfDay(subDays(new Date(), 29)),
+    from: parseDateParam(sp.get('from')) ?? startOfDay(subDays(new Date(), 6)),
     to: parseDateParam(sp.get('to')) ?? endOfDay(new Date()),
   };
 
@@ -65,7 +65,7 @@ function useUrlFilters(): [Filters, (f: Filters) => void, () => void] {
 
 const Home = () => {
 
-  const [filters, setFilters, _clearFilters] = useUrlFilters();
+  const [filters, setFilters] = useUrlFilters();
 
   const [dateRange, setDateRange] = useState<DateRange>({
     from: filters.from,

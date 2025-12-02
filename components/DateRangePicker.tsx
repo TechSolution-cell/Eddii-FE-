@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Calendar as CalendarIcon } from "lucide-react";
+// ── React & libs ──────────────────────────────────────────────────────
+import { useMemo, useState, useEffect } from "react";
 import {
   format,
   subDays,
@@ -11,10 +11,16 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
+
+
+// ── UI (radix + icons) ───────────────────────────────────────────────
+import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+
+// ── Types ───────────────────────────────────────────────
 import { DateRange as ReactDayPickerRange } from "react-day-picker";
 
 export interface DateRange {
@@ -99,7 +105,7 @@ export function DateRangePicker({
 }: DateRangePickerProps) {
 
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const labelMap = useMemo(
     () =>
     ({
@@ -156,6 +162,39 @@ export function DateRangePicker({
     }
   };
 
+  // Keep selectedPreset & customRange in sync with external dateRange
+  useEffect(() => {
+    const { from, to } = dateRange;
+
+    // If incomplete range, treat as custom
+    if (!from || !to) {
+      setSelectedPreset("custom");
+      setCustomRange(dateRange);
+      return;
+    }
+
+    // Try to match one of the visible presets (except "custom")
+    let matchedPreset: PresetType | null = null;
+
+    for (const preset of finalVisible) {
+      if (preset === "custom") continue;
+
+      const presetRange = getPresetRange(preset);
+      if (!presetRange.from || !presetRange.to) continue;
+
+      if (
+        presetRange.from.getTime() === from.getTime() &&
+        presetRange.to.getTime() === to.getTime()
+      ) {
+        matchedPreset = preset;
+        break;
+      }
+    }
+
+    setSelectedPreset(matchedPreset ?? "custom");
+    setCustomRange(dateRange);
+  }, [dateRange, finalVisible]);
+
   const handlePresetSelect = (preset: PresetType) => {
     setSelectedPreset(preset);
     if (preset !== "custom") {
@@ -197,12 +236,16 @@ export function DateRangePicker({
     [computedPresets, searchQuery]
   );
 
+  const effectiveRange =
+    selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset);
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className="justify-start text-left font-normal min-w-52 h-10">
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {formatDateRange(selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset))}
+          {/* {formatDateRange(selectedPreset === "custom" ? customRange : getPresetRange(selectedPreset))} */}
+          {formatDateRange(effectiveRange)}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 border-0 rounded-xl w-" align="start">
