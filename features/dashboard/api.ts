@@ -62,8 +62,6 @@ export function useDashboard(
         groupBy,
     };
 
-    console.log(keyPayload);
-
     const queryKey: QueryKey = ["dashboard", keyPayload];
 
     return useQuery<DashboardResponse>({

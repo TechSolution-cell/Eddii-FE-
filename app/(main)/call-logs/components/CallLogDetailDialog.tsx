@@ -123,8 +123,7 @@ const renderSentimentStars = (sentiment: number | null) => {
     }
 
     const filled = Math.min(5, sentiment);
-
-    console.log(filled);
+    
     return (
         <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, idx) => (

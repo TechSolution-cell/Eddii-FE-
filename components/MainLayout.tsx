@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { signOut } from "next-auth/react"
 
+import { apiFetch } from '@/lib/api';
+
 import Sidebar from '@/components/Sidebar';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -35,19 +37,26 @@ export default function MainLayout({ user, onLogout, children }: MainLayoutProps
 
   const handleLogOut =
     onLogout ??
-    (() => {
+    (async () => {
       // 1) Immediate local logout experience
       setIsLoggedOut(true);
 
-      // 2) Try client navigation (works if chunk is already prefetched/cached)
+      // 2) Call backend logout to revoke refresh token
+      try {
+        await apiFetch('/auth/logout', { method: 'POST' });
+      } catch (e) {
+        console.error('Backend logout failed', e);
+      }
+
+      // 3) Try client navigation
       try {
         router.replace('/auth/login');
       } catch { }
 
-      // 3) Best-effort: clear NextAuth session in background (will no-op if server is off)
+      // 4) Clear NextAuth session (no redirect, we handle it)
       void signOut({ redirect: false }).catch(() => { });
-      // signOut({ callbackUrl: "/auth/login" });
-      // 4) Safety net: hard navigation (helps kill in-memory state; still requires server)
+
+      // 5) Hard navigation to really reset client state
       setTimeout(() => {
         if (typeof window !== 'undefined') {
           window.location.replace('/auth/login');
@@ -75,7 +84,7 @@ export default function MainLayout({ user, onLogout, children }: MainLayoutProps
       </div>
     );
   }
-  
+
   // Authenticated layout
   return (
     <div className="flex min-h-screen bg-gray-50">

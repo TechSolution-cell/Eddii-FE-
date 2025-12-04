@@ -79,7 +79,6 @@ export function FilterBar({ defaultValues, onChange, onClear, isDisabled = false
         const sub = form.watch((values) => {
             const parsed = Schema.safeParse(values);
             if (parsed.success) {
-                console.log(parsed.data);
                 debounced(parsed.data); // ← only fires when the whole form is valid
             }
         });

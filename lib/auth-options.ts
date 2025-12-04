@@ -21,18 +21,19 @@ const API_BASE = process.env.BACKEND_API_BASE_URL!
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
     try {
-        console.log(API_BASE);
+        console.log('refresh access token');
         const res = await fetch(`${API_BASE}/auth/refresh`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ refresh_token: token.refreshToken }),
-        })
+        });
+        console.log(res);
         if (!res.ok) throw new Error("Refresh failed")
 
         const refreshed = await res.json()
         const decoded = jwtDecode<JwtPayload>(refreshed.access_token);
         const accessTokenExpires = decoded?.exp ? decoded.exp * 1000 : Date.now() + 14 * 60 * 1000; // Default 14 mins
-        // console.log('not expired' + Math.floor(Math.random() * 100000000))
+        
         return {
             ...token,
             accessToken: refreshed.access_token,
@@ -40,7 +41,8 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
             refreshToken: refreshed.refresh_token ?? token.refreshToken,
         }
     } catch (e: unknown) {
-        console.log(e instanceof Error ? e.message : e)
+        console.log(e);
+        // console.log(e instanceof Error ? e.message : e)
         console.log('RefreshAccessTokenError');
         return { ...token, error: "RefreshAccessTokenError" }
     }
@@ -147,7 +149,7 @@ export const authOptions: NextAuthOptions = {
 
             // If token still valid, return it
             if (token.accessToken && typeof token.accessTokenExpires === "number" && Date.now() < token.accessTokenExpires) {
-                console.log('access token is not expired: ' + Math.floor(Math.random() * 1000000));
+                console.log('access token is not expired: (callback jwt)', Date.now());
                 return token;
             }
             // Refresh otherwise
