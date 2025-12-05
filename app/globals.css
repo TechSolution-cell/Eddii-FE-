@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-/* @import "line-clamp"; */
 
 :root {
   --background: #ffffff;
@@ -40,7 +39,7 @@
   --scn-secondary: 240 4.8% 95.9%;
   --scn-secondary-foreground: 240 5.9% 10%;
   --scn-accent: 240 4.8% 95.9%;
-  --scn-accent-foreground: ;
+  --scn-accent-foreground: 240 5.9% 10%;
   --scn-destructive: 0 84.2% 60.2%;
   --scn-destructive-foreground: 0 0% 98%;
   --scn-warning: 35, 100%, 52%;

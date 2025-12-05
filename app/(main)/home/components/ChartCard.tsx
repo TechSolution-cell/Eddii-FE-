@@ -90,21 +90,33 @@ export function ChartCard({
 
   // helper
   function formatBucketLabel(bucket: string, groupBy: DateGrouping): string {
-    if (groupBy === 'month') return bucket;
+    if (groupBy === "month") return bucket;
 
-    const date = new Date(bucket);
+    // Normalize bucket like "Week of 2025-09-08" -> "2025-09-08"
+    const normalized = bucket.replace(/^Week of\s+/i, "");
+
+    // Safely parse YYYY-MM-DD without timezone issues
+    const [yearStr, monthStr, dayStr] = normalized.slice(0, 10).split("-");
+    const year = Number(yearStr);
+    const month = Number(monthStr); // 1–12
+    const day = Number(dayStr);
+
+    // Construct local Date (no UTC shift)
+    const date = new Date(year, month - 1, day);
+
+    if (Number.isNaN(date.getTime())) {
+      console.warn("Invalid bucket date:", bucket);
+      return bucket; // fallback
+    }
 
     switch (groupBy) {
       case "week": {
-        // "Oct 7 - Oct 13"
         const start = startOfWeek(date, { weekStartsOn: 1 });
         const end = endOfWeek(date, { weekStartsOn: 1 });
         return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
       }
-
       case "day":
       default:
-        // "Oct 7"
         return format(date, "MMM d");
     }
   }

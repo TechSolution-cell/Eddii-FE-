@@ -19,6 +19,7 @@ export interface UseDashboardParams {
     to?: string;                  // ISO date string
     marketingSourceIds?: string[];
     groupBy?: DateGrouping;
+    timezone?: string;
 }
 
 /**
@@ -29,8 +30,9 @@ function buildSearchParams(opts: {
     to?: string;
     marketingSourceIds?: string[];
     groupBy?: DateGrouping;
+    timezone?: string;
 }) {
-    const { from, to, marketingSourceIds, groupBy } = opts;
+    const { from, to, marketingSourceIds, groupBy, timezone } = opts;
 
     const sp = new URLSearchParams();
 
@@ -43,6 +45,7 @@ function buildSearchParams(opts: {
     }
 
     if (groupBy) sp.set("groupBy", groupBy);
+    if (timezone) sp.set("timezone", timezone);
 
     return sp.toString();
 }
@@ -53,13 +56,14 @@ function buildSearchParams(opts: {
 export function useDashboard(
     params: UseDashboardParams
 ): UseQueryResult<DashboardResponse> {
-    const { from, to, marketingSourceIds, groupBy } = params;
+    const { from, to, marketingSourceIds, groupBy, timezone } = params;
 
     const keyPayload = {
         from,
         to,
         marketingSourceIds: marketingSourceIds ?? [],
         groupBy,
+        timezone,
     };
 
     const queryKey: QueryKey = ["dashboard", keyPayload];
@@ -67,7 +71,7 @@ export function useDashboard(
     return useQuery<DashboardResponse>({
         queryKey,
         queryFn: async () => {
-            const qs = buildSearchParams({ from, to, marketingSourceIds, groupBy });
+            const qs = buildSearchParams({ from, to, marketingSourceIds, groupBy, timezone });
             const url = `/dashboard${qs ? `?${qs}` : ""}`;
             
             const res = await apiFetch<DashboardResponse>(url);

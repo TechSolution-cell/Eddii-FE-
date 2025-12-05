@@ -77,7 +77,8 @@ const Home = () => {
   const { data, isLoading, isError } = useDashboard({
     from: dateRange.from?.toISOString(),
     to: dateRange.to?.toISOString(),
-    marketingSourceIds
+    marketingSourceIds,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     // groupBy: undefined,
   });
 
