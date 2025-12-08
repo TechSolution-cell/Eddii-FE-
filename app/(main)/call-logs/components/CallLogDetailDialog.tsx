@@ -20,7 +20,9 @@ import {
     Repeat2,
     HelpCircle,
     MinusCircle,
-    Globe2
+    Globe2,
+    ShoppingBag,
+    PhoneOff
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -53,6 +55,8 @@ const formatDuration = (seconds: number) => {
 
 const formatIntent = (intent: CallIntent) => {
     switch (intent) {
+        case 'purchase':
+            return 'Purchase';
         case 'trade_in':
             return 'Trade-In';
         case 'finance':
@@ -71,10 +75,22 @@ const formatIntent = (intent: CallIntent) => {
 
 const formatResult = (result: CallResult) => {
     switch (result) {
+        case 'not_connected':
+            return 'Not Connected';
+        case 'appointment_cancelled':
+            return 'Appointment Cancelled';
+        case 'appointment_requested':
+            return 'Appointment Requested';
+        case 'appointment_rescheduled':
+            return 'Appointment Rescheduled';
         case 'appointment_booked':
             return 'Appointment Booked';
         case 'call_transferred':
             return 'Call Transferred';
+        case 'follow_up':
+            return 'Follow Up';
+        case 'not_interested':
+            return 'Not Interested';
         case 'other':
             return 'Other';
         case 'none':
@@ -85,8 +101,10 @@ const formatResult = (result: CallResult) => {
 
 export const getIntentBadgeClasses = (intent: CallIntent) => {
     switch (intent) {
+        case 'purchase':
+            return 'bg-amber-100/60 text-amber-800 hover:bg-amber-100/60 shadow';
         case 'trade_in':
-            return 'bg-amber-100 text-amber-800 hover:bg-amber-100 shadow';
+            return 'bg-amber-100/70 text-amber-800 hover:bg-amber-100/70 shadow';
         case 'finance':
             return 'bg-sky-100 text-sky-800 hover:bg-sky-100 shadow';
         case 'credit':
@@ -103,15 +121,75 @@ export const getIntentBadgeClasses = (intent: CallIntent) => {
 
 export const getResultBadgeClasses = (result: CallResult) => {
     switch (result) {
+        case 'not_connected':
+            // call never really happened
+            return 'bg-red-100 text-red-700 hover:bg-red-100 shadow';
+        case 'appointment_requested':
+        case 'appointment_rescheduled':
+        case 'appointment_cancelled':
         case 'appointment_booked':
             return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100 shadow';
         case 'call_transferred':
-            return 'bg-blue-100 text-blue-800 hover:bg-blue-100 shadow';
+            return 'bg-sky-100 text-sky-800 hover:bg-sky-100 shadow';
+        case 'follow_up':
+            return 'bg-amber-100/70 text-amber-800 hover:bg-amber-100/70 shadow';
+        case 'not_interested':
+            return 'bg-slate-100 text-slate-800 hover:bg-slate-100 shadow';
         case 'other':
             return 'bg-slate-100 text-slate-800 hover:bg-slate-100 shadow';
         case 'none':
         default:
-            return 'bg-gray-100 text-gray-600 hover:bg-gray-100 shadow';
+            return 'bg-gray-100 text-gray-700 hover:bg-gray-100 shadow';
+    }
+};
+
+/**
+ * Icon for intent badge
+ */
+const renderIntentIcon = (intent: CallIntent) => {
+    const cls = 'w-3 h-3';
+    switch (intent) {
+        case 'purchase':
+            return <ShoppingBag className={cls} />;
+        case 'trade_in':
+            return <Repeat2 className={cls} />;
+        case 'finance':
+            return <DollarSign className={cls} />;
+        case 'credit':
+            return <CreditCard className={cls} />;
+        case 'appointment':
+            return <CalendarDays className={cls} />;
+        case 'other':
+        case 'none':
+        default:
+            return <HelpCircle className={cls} />;
+    }
+}
+
+/**
+ * Icon for result badge
+ */
+const renderResultIcon = (result: CallResult) => {
+    const cls = 'w-3 h-3';
+    switch (result) {
+        case 'not_connected':
+            return <PhoneOff className={cls} />;
+        case 'appointment_requested':
+        case 'appointment_rescheduled':
+        case 'appointment_cancelled':
+        case 'appointment_booked':
+            return <CalendarDays className={cls} />;
+        case 'call_transferred':
+            return <PhoneForwarded className={cls} />;
+        case 'follow_up':
+            return <Repeat2 className={cls} />;
+        case 'not_interested':
+            return <MinusCircle className={cls} />;
+        case 'other':
+            return <HelpCircle className={cls} />;
+        case 'none':
+        default:
+            return <MinusCircle className={cls} />;
     }
 };
 
@@ -123,7 +201,7 @@ const renderSentimentStars = (sentiment: number | null) => {
     }
 
     const filled = Math.min(5, sentiment);
-    
+
     return (
         <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, idx) => (
@@ -257,22 +335,7 @@ export function CallLogDetailDialog({ log, open, onClose }: CallLogDetailDialogP
                                                     log.intent
                                                 )}`}
                                             >
-                                                {log.intent === 'trade_in' && (
-                                                    <Repeat2 className="w-3 h-3" />
-                                                )}
-                                                {log.intent === 'finance' && (
-                                                    <DollarSign className="w-3 h-3" />
-                                                )}
-                                                {log.intent === 'credit' && (
-                                                    <CreditCard className="w-3 h-3" />
-                                                )}
-                                                {log.intent === 'appointment' && (
-                                                    <CalendarDays className="w-3 h-3" />
-                                                )}
-                                                {(log.intent === 'other' ||
-                                                    log.intent === 'none') && (
-                                                        <HelpCircle className="w-3 h-3" />
-                                                    )}
+                                                {renderIntentIcon(log.intent)}
                                                 <span>{formatIntent(log.intent)}</span>
                                             </Badge>
                                         </div>
@@ -285,18 +348,7 @@ export function CallLogDetailDialog({ log, open, onClose }: CallLogDetailDialogP
                                                     log.result
                                                 )}`}
                                             >
-                                                {log.result === 'appointment_booked' && (
-                                                    <CalendarDays className="w-3 h-3" />
-                                                )}
-                                                {log.result === 'call_transferred' && (
-                                                    <PhoneForwarded className="w-3 h-3" />
-                                                )}
-                                                {log.result === 'other' && (
-                                                    <HelpCircle className="w-3 h-3" />
-                                                )}
-                                                {log.result === 'none' && (
-                                                    <MinusCircle className="w-3 h-3" />
-                                                )}
+                                                {renderResultIcon(log.result)}
                                                 <span>{formatResult(log.result)}</span>
                                             </Badge>
                                         </div>

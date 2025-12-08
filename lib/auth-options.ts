@@ -27,7 +27,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ refresh_token: token.refreshToken }),
         });
-        console.log(res);
+        // console.log(res);
         if (!res.ok) throw new Error("Refresh failed")
 
         const refreshed = await res.json()

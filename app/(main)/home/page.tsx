@@ -3,29 +3,29 @@
 // ── React & libs ──────────────────────────────────────────────────────
 import { useState } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
-import { subDays, startOfDay, endOfDay } from "date-fns";
+import { subDays, startOfDay, endOfDay, format } from "date-fns";
+
 
 // ── App utilities / hooks / state ────────────────────────────────────
-import { useDashboard } from "@/features/dashboard/api";
+import { useDashboardRange, useDashboardStatic } from "@/features/dashboard/api";
 import { serializeDateParam, parseDateParam } from "@/lib/utils";
 
 // ── UI (radix + icons) ───────────────────────────────────────────────
-import { MetricCard } from '@/app/(main)/home/components/MetricsCard';
-import { ChartCard } from '@/app/(main)/home/components/ChartCard'
+import { MetricCard } from '@/app/(main)/dashboard/components/MetricsCard';
+import { ChartCard } from '@/app/(main)/dashboard/components/ChartCard'
 import { PhoneIcon, ClockIcon } from 'lucide-react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
 // ── types ───────────────────────────────────────────────
 import type { DateRange } from "@/components/DateRangePicker";
-
+import { CallSummaryKpis } from "@/types/analytics";
+import { CallSummaryCard } from "../dashboard/components/CallSummaryCard";
 
 interface Filters {
   from?: Date;
   to?: Date;
-
   marketingSourceIds?: string[];
 }
-
 
 function useUrlFilters(): [Filters, (f: Filters) => void, () => void] {
   const router = useRouter();
@@ -62,128 +62,130 @@ function useUrlFilters(): [Filters, (f: Filters) => void, () => void] {
   return [current, setFilters, clear];
 }
 
+const emptyKpis: CallSummaryKpis = {
+  totalCalls: { value: 0, changePercent: 0 },
+  connectedCalls: 0,
+  requestedAppointments: 0,
+  bookedAppointments: 0,
+  conversationRatePercent: 0,
+  bookingRatePercent: 0,
+  avgSentiment: null,
+};
+
+const withDefaults = (k?: CallSummaryKpis | null): CallSummaryKpis => ({
+  ...emptyKpis,
+  ...(k ?? {}),
+  totalCalls: {
+    ...emptyKpis.totalCalls,
+    ...(k?.totalCalls ?? {}),
+  },
+});
+
+const formatRangeLabel = (range: DateRange): string => {
+  const { from, to } = range;
+
+  if (from && to) {
+    return `${format(from, "MMM d, yyyy")} – ${format(to, "MMM d, yyyy")}`;
+  }
+  if (from) return `From ${format(from, "MMM d, yyyy")}`;
+  if (to) return `Until ${format(to, "MMM d, yyyy")}`;
+  return "No date range selected";
+};
 
 const Home = () => {
 
   const [filters, setFilters] = useUrlFilters();
 
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: filters.from,
-    to: filters.to,
-  });
-
   const [marketingSourceIds, setMarketingSourceIds] = useState<string[]>(filters?.marketingSourceIds ?? []);
 
-  const { data, isLoading, isError } = useDashboard({
-    from: dateRange.from?.toISOString(),
-    to: dateRange.to?.toISOString(),
-    marketingSourceIds,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    // groupBy: undefined,
-  });
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const handleDateRangeChange = (range: DateRange) => {
-    setDateRange(range);
 
-    setFilters({
-      ...filters,
-      from: range.from,
-      to: range.to
-    })
-  }
+  // STATIC metrics – today / last7 / last30
+  const { data: staticData, isLoading: isStaticLoading } = useDashboardStatic({ marketingSourceIds, timezone });
 
-  const handleMarketingSourceIdsChange = (ids: string[]) => {
-    setMarketingSourceIds(ids);
+  const salesStatic = staticData?.summary.sales;
+  const serviceStatic = staticData?.summary.service;
 
-    setFilters({
-      ...filters,
-      marketingSourceIds: ids
-    });
-  }
+  const salesToday = withDefaults(salesStatic?.today);
+  const salesLast7 = withDefaults(salesStatic?.last7Days);
+  const salesLast30 = withDefaults(salesStatic?.last30Days);
 
-  const summary = data?.summary;
-
-  const callsToday = summary?.callsToday ?? { value: 0, changePercent: 0 };
-  const callsLast7 =
-    summary?.callsLast7Days ?? { value: 0, changePercent: 0 };
-  const callsLast30 =
-    summary?.callsLast30Days ?? { value: 0, changePercent: 0 };
-
-  const minutesToday = summary?.minutesToday ?? { value: 0, changePercent: 0 };
-  const minutesLast7 =
-    summary?.minutesLast7Days ?? { value: 0, changePercent: 0 };
-  const minutesLast30 =
-    summary?.minutesLast30Days ?? { value: 0, changePercent: 0 };
-
+  const serviceToday = withDefaults(serviceStatic?.today);
+  const serviceLast7 = withDefaults(serviceStatic?.last7Days);
+  const serviceLast30 = withDefaults(serviceStatic?.last30Days);
 
   return (
     <div className=" bg-gray-50">
       <Card className="border-purple-200 border bg-gradient-to-br from-white to-purple-50">
         <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
-          <CardTitle className="text-2xl text-white">Call Tracking Dashboard</CardTitle>
+          <CardTitle className="text-2xl text-white">Performance Snapshot</CardTitle>
         </CardHeader>
       </Card>
 
       <div className="mx-auto space-y-6 mt-5"> {/** max-w-7xl  */}
-        {/* Top Row - Call Metrics */}
+        {/* 1️⃣ STATIC METRICS – Sales (top row) */}
+        <div className="mb-3">
+          <h2 className="text-lg font-semibold text-purple-800">Sales Calls</h2>
+          <p className="text-xs text-gray-500">
+            Today, last 7 days, and last 30 days (overall).
+          </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MetricCard
+          <CallSummaryCard
             title="Calls Today"
-            value={callsToday.value}
-            changePercent={callsToday.changePercent}
-            isLoading={isLoading}
-            icon={<PhoneIcon className="h-6 w-6 text-purple-600" />}
+            departmentLabel="Sales"
+            metrics={salesToday}
+            isLoading={isStaticLoading}
           />
-          <MetricCard
+          <CallSummaryCard
             title="Calls Last 7 Days"
-            value={callsLast7.value}
-            changePercent={callsLast7.changePercent}
-            isLoading={isLoading}
-            icon={<PhoneIcon className="h-6 w-6 text-purple-600" />}
+            departmentLabel="Sales"
+            metrics={salesLast7}
+            isLoading={isStaticLoading}
           />
-          <MetricCard
+          <CallSummaryCard
+            title="Calls Last 30 Days"
+            departmentLabel="Sales"
+            metrics={salesLast30}
+            isLoading={isStaticLoading}
+          />
+          {/* <MetricCard
             title="Calls last 30 Days"
             value={callsLast30.value}
             changePercent={callsLast30.changePercent}
             isLoading={isLoading}
             icon={<PhoneIcon className="h-6 w-6 text-purple-600" />}
-          />
+          /> */}
         </div>
 
-        {/* Chart Section */}
-        <ChartCard
-          dateRange={dateRange}
-          onDateRangeChange={handleDateRangeChange}
-          marketingSourceIds={marketingSourceIds}
-          onMarketingSourcesChange={handleMarketingSourceIdsChange}
-          chartPoints={data?.chart.points ?? []}
-          groupBy={data?.chart.groupBy ?? 'day'}
-          isLoading={isLoading}
-          hasError={isError}
-        />
-
         {/* Bottom Row - Minutes Metrics */}
+        <div className="mb-3">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Service Calls
+          </h2>
+          <p className="text-xs text-gray-500">
+            Today, last 7 days, and last 30 days (overall).
+          </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MetricCard
-            title="Minutes Today"
-            value={minutesToday.value}
-            changePercent={minutesToday.changePercent}
-            isLoading={isLoading}
-            icon={<ClockIcon className="h-6 w-6 text-purple-600" />}
+          <CallSummaryCard
+            title="Calls Today"
+            departmentLabel="Service"
+            metrics={serviceToday}
+            isLoading={isStaticLoading}
           />
-          <MetricCard
-            title="Minutes Last 7 Days"
-            value={minutesLast7.value}
-            changePercent={minutesLast7.changePercent}
-            isLoading={isLoading}
-            icon={<ClockIcon className="h-6 w-6 text-purple-600" />}
+          <CallSummaryCard
+            title="Calls Last 7 Days"
+            departmentLabel="Service"
+            metrics={serviceLast7}
+            isLoading={isStaticLoading}
           />
-          <MetricCard
-            title="Minutes Last 30 Days"
-            value={minutesLast30.value}
-            changePercent={minutesLast30.changePercent}
-            isLoading={isLoading}
-            icon={<ClockIcon className="h-6 w-6 text-purple-600" />}
+          <CallSummaryCard
+            title="Calls Last 30 Days"
+            departmentLabel="Service"
+            metrics={serviceLast30}
+            isLoading={isStaticLoading}
           />
         </div>
       </div>

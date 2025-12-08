@@ -12,18 +12,29 @@ import {
 import { apiFetch } from "@/lib/api";
 
 // ── Types & Enums ────────────────────────────────────────────
-import { DateGrouping, DashboardResponse } from "@/types";
+import {
+    DateGrouping,
+    DashboardStaticResponse,
+    DashboardRangeResponse,
+} from "@/types";
 
-export interface UseDashboardParams {
-    from?: string;                // ISO date string
-    to?: string;                  // ISO date string
+// ---- Params -------------------------------------------------
+
+export interface UseDashboardStaticParams {
+    marketingSourceIds?: string[];
+    timezone?: string;
+}
+
+export interface UseDashboardRangeParams {
+    from?: string; // ISO date string
+    to?: string;   // ISO date string
     marketingSourceIds?: string[];
     groupBy?: DateGrouping;
     timezone?: string;
 }
 
 /**
- * Build search params for dashboard endpoint
+ * Build search params for dashboard endpoints
  */
 function buildSearchParams(opts: {
     from?: string;
@@ -50,12 +61,42 @@ function buildSearchParams(opts: {
     return sp.toString();
 }
 
-/**
- * Dashboard data (summary + chart) for a business.
- */
-export function useDashboard(
-    params: UseDashboardParams
-): UseQueryResult<DashboardResponse> {
+// ---------------------------------------------------------------------
+// 1) STATIC DASHBOARD: /dashboard/static
+//    Today / Last 7 / Last 30 for Sales & Service
+// ---------------------------------------------------------------------
+export function useDashboardStatic(
+    params: UseDashboardStaticParams,
+): UseQueryResult<DashboardStaticResponse> {
+    const { marketingSourceIds, timezone } = params;
+
+    const keyPayload = {
+        marketingSourceIds: marketingSourceIds ?? [],
+        timezone,
+    };
+
+    const queryKey: QueryKey = ["dashboard", "static", keyPayload];
+
+    return useQuery<DashboardStaticResponse>({
+        queryKey,
+        queryFn: async () => {
+            // For static endpoint we only send marketingSourceIds + timezone
+            const qs = buildSearchParams({ marketingSourceIds, timezone });
+            const url = `/dashboard/static${qs ? `?${qs}` : ""}`;
+
+            const res = await apiFetch<DashboardStaticResponse>(url);
+            return res;
+        },
+    });
+}
+
+// ---------------------------------------------------------------------
+// 2) RANGE DASHBOARD: /dashboard/range
+//    Selected range + chart for Sales & Service
+// ---------------------------------------------------------------------
+export function useDashboardRange(
+    params: UseDashboardRangeParams,
+): UseQueryResult<DashboardRangeResponse> {
     const { from, to, marketingSourceIds, groupBy, timezone } = params;
 
     const keyPayload = {
@@ -66,19 +107,23 @@ export function useDashboard(
         timezone,
     };
 
-    const queryKey: QueryKey = ["dashboard", keyPayload];
+    const queryKey: QueryKey = ["dashboard", "range", keyPayload];
 
-    return useQuery<DashboardResponse>({
+    return useQuery<DashboardRangeResponse>({
         queryKey,
         queryFn: async () => {
-            const qs = buildSearchParams({ from, to, marketingSourceIds, groupBy, timezone });
-            const url = `/dashboard${qs ? `?${qs}` : ""}`;
-            
-            const res = await apiFetch<DashboardResponse>(url);
+            const qs = buildSearchParams({
+                from,
+                to,
+                marketingSourceIds,
+                groupBy,
+                timezone,
+            });
+            const url = `/dashboard/range${qs ? `?${qs}` : ""}`;
+
+            const res = await apiFetch<DashboardRangeResponse>(url);
             return res;
         },
-        // placeholderData: keepPreviousData,
+        placeholderData: keepPreviousData,
     });
 }
-
-

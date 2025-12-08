@@ -37,8 +37,34 @@ export interface Turn {
 
 type Role = 'salesperson' | 'client' | 'unknown';
 
-export type CallStatus = 'queued' | 'ringing' | 'in-progress' | 'completed' | 'busy' | 'failed' | 'no-answer' | 'canceled' | 'unknown';
+export type CallStatus =
+    'queued' |
+    'ringing' |
+    'in-progress' |
+    'completed' |
+    'busy' |
+    'failed' |
+    'no-answer' |
+    'canceled' |
+    'unknown';
 
-export type CallResult = 'none' | 'appointment_booked' | 'call_transferred' | 'other';
+export type CallResult =
+    'none' |
+    'not_connected' |
+    'appointment_requested' |
+    'appointment_booked' |
+    'appointment_rescheduled' |
+    'appointment_cancelled' |
+    'call_transferred' |
+    'not_interested' |
+    'follow_up' |
+    'other';
 
-export type CallIntent = 'none' | 'trade_in' | 'finance' | 'credit' | 'appointment' | 'other';
+export type CallIntent =
+    'none' |
+    'purchase' |
+    'trade_in' |
+    'finance' |
+    'credit' |
+    'appointment' |
+    'other';

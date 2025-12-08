@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, ComponentType } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import type { Role } from '@/types';
 import {
@@ -15,6 +15,7 @@ import {
   Megaphone,
   Building2,
   ChevronDown,
+  LayoutDashboard
 } from 'lucide-react';
 
 import {
@@ -28,13 +29,19 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
+interface NavigationSubItem {
+  name: string;
+  href: string;
+  icon?: ComponentType<{ className?: string }>;
+}
+
 interface NavigationItem {
   id: string;
   name: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   href: string;
   hasSubmenu?: boolean;
-  submenuItems?: { name: string; href: string }[];
+  submenuItems?: NavigationSubItem[];
   /** If omitted, item is visible to all roles */
   allowedRoles?: Role[];
 }
@@ -74,7 +81,22 @@ const navigationItems: NavigationItem[] = [
     icon: Building2,
     href: '/businesses',
     allowedRoles: ['SUPER_ADMIN']
-  }
+  },
+  {
+    id: 'dashboard',
+    name: 'Dashboard',
+    icon: LayoutDashboard,
+    href: '/dashboard',
+    submenuItems: [
+      {
+        name: 'Insights',
+        href: '/dashboard/insights',
+        icon: BarChart3,
+      }
+    ],
+    hasSubmenu: true,
+    allowedRoles: ['BUSINESS_ADMIN']
+  },
 ];
 
 export default function Sidebar({ user, onLogout }: SidebarProps) {
@@ -140,19 +162,6 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
     }
   }, [pathname]);
 
-  // Active-URL helpers
-  // const isPathActive = (target: string) => {
-  //   // Mark active if current path is exactly the target OR starts with it (for nested pages)
-  //   if (target === '/') return pathname === '/';
-  //   return pathname === target || pathname.startsWith(`${target}/`);
-  // };
-
-  // const isItemActive = (item: NavigationItem) => {
-  //   if (isPathActive(item.href)) return true;
-  //   if (item.submenuItems?.some((s) => isPathActive(s.href))) return true;
-  //   return false;
-  // };
-
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   const toggleSubmenu = (itemId: string) => {
@@ -180,6 +189,19 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
     setIsUserAccountMenuOpen(false);
     onLogout?.();
   };
+
+  // Active-URL helpers
+  // const isPathActive = (target: string) => {
+  //   // Mark active if current path is exactly the target OR starts with it (for nested pages)
+  //   if (target === '/') return pathname === '/';
+  //   return pathname === target || pathname.startsWith(`${target}/`);
+  // };
+
+  // const isItemActive = (item: NavigationItem) => {
+  //   if (isPathActive(item.href)) return true;
+  //   if (item.submenuItems?.some((s) => isPathActive(s.href))) return true;
+  //   return false;
+  // };
 
   return (
     <>
@@ -259,21 +281,39 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
                   {/* Submenu */}
                   {item.hasSubmenu && hasOpenSubmenu && item.submenuItems && (
                     <ul className="ml-8 mt-2 space-y-1">
-                      {item.submenuItems.map((subItem) => (
-                        <li key={subItem.href}>
-                          <button
-                            onClick={() => {
-                              setActiveItem(`${item.id}-${subItem.name.toLowerCase().replace(/\s+/g, '-')}`);
-                              if (window.innerWidth < 1024) setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm text-purple-300 hover:text-white hover:bg-purple-700/30 rounded-md transition-colors"
-                          >
-                            {subItem.name}
-                          </button>
-                        </li>
-                      ))}
+                      {item.submenuItems.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        const isSubActive =
+                          pathname === subItem.href ||
+                          pathname.startsWith(`${subItem.href}/`);
+
+                        return (
+                          <li key={subItem.href}>
+                            <button
+                              onClick={() => {
+                                setActiveItem(`${item.id}-${subItem.name.toLowerCase().replace(/\s+/g, '-')}`);
+                                router.push(subItem.href);
+                                if (window.innerWidth < 1024) setIsOpen(false);
+                              }}
+                              // hover:bg-purple-700/30 hover:text-white
+                              className={`w-full flex items-center text-left px-3 py-2 text-sm text-purple-300 
+                                  rounded-md transition-colors cursor-pointer 
+                                 ${isSubActive
+                                  ? 'bg-purple-600/70 text-white'
+                                  : 'text-purple-300 hover:text-white hover:bg-purple-700/30'
+                                }`}
+                            >
+                              {SubIcon && (
+                                <SubIcon className="h-4 w-4 mr-2 text-purple-300" />
+                              )}
+                              <span>{subItem.name}</span>
+                            </button>
+                          </li>
+                        )
+                      })}
                     </ul>
-                  )}
+                  )
+                  }
                 </li>
               );
             })}
@@ -328,85 +368,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
             </div>
           </PopoverContent>
         </Popover>
-      </div>
+      </div >
     </>
   );
 }
-
-
-// const navigationItems: NavigationItem[] = [
-//   {
-//     id: 'go-to-service',
-//     name: 'Go To Call Tracking Service',
-//     icon: BarChart3,
-//     href: '/service'
-//   },
-//   {
-//     id: 'dashboard',
-//     name: 'Dashboard',
-//     icon: LayoutDashboard,
-//     href: '/dashboard'
-//   },
-//   {
-//     id: 'pursue-box',
-//     name: 'Pursue Box',
-//     icon: MessageSquare,
-//     href: '/pursue-box'
-//   },
-//   {
-//     id: 'reports',
-//     name: 'Call Tracking Reports',
-//     icon: FileText,
-//     href: '/reports',
-//     hasSubmenu: true,
-//     submenuItems: [
-//       { name: 'Call Volume', href: '/reports/volume' },
-//       { name: 'Marketing Sources', href: '/reports/sources' },
-//       { name: 'Call Recordings', href: '/reports/recordings' },
-//       { name: 'Transcripts', href: '/reports/transcripts' }
-//     ]
-//   },
-//   {
-//     id: 'resources',
-//     name: 'Resources',
-//     icon: FileText,
-//     href: '/resources',
-//     hasSubmenu: true,
-//     submenuItems: [
-//       { name: 'Documentation', href: '/resources/docs' },
-//       { name: 'API Reference', href: '/resources/api' },
-//       { name: 'Webhooks', href: '/resources/webhooks' }
-//     ]
-//   },
-//   {
-//     id: 'configuration',
-//     name: 'Configuration',
-//     icon: Settings,
-//     href: '/configuration',
-//     hasSubmenu: true,
-//     submenuItems: [
-//       { name: 'Marketing Sources', href: '/configuration/sources' },
-//       { name: 'Phone Numbers', href: '/configuration/numbers' },
-//       { name: 'Call Forwarding', href: '/configuration/forwarding' },
-//       { name: 'Integration Settings', href: '/configuration/integration' }
-//     ]
-//   },
-//   {
-//     id: 'search',
-//     name: 'Search For A Call',
-//     icon: Search,
-//     href: '/search'
-//   },
-//   {
-//     id: 'dialer',
-//     name: 'Dialer',
-//     icon: Phone,
-//     href: '/dialer'
-//   },
-//   {
-//     id: 'support',
-//     name: 'Support',
-//     icon: HelpCircle,
-//     href: '/support'
-//   }
-// ];
