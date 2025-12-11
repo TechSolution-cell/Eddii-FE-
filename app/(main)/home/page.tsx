@@ -1,23 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client"
 
 // ── React & libs ──────────────────────────────────────────────────────
 import { useState } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
-import { subDays, startOfDay, endOfDay, format } from "date-fns";
+import { subDays, startOfDay, endOfDay } from "date-fns";
 
 
 // ── App utilities / hooks / state ────────────────────────────────────
-import { useDashboardRange, useDashboardStatic } from "@/features/dashboard/api";
+import { useDashboardStatic } from "@/features/dashboard/api";
 import { serializeDateParam, parseDateParam } from "@/lib/utils";
 
-// ── UI (radix + icons) ───────────────────────────────────────────────
-import { MetricCard } from '@/app/(main)/dashboard/components/MetricsCard';
-import { ChartCard } from '@/app/(main)/dashboard/components/ChartCard'
-import { PhoneIcon, ClockIcon } from 'lucide-react';
+// ── UI (radix + icons) ───────────────────────────────────────────────ct';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
 // ── types ───────────────────────────────────────────────
-import type { DateRange } from "@/components/DateRangePicker";
 import { CallSummaryKpis } from "@/types/analytics";
 import { CallSummaryCard } from "../dashboard/components/CallSummaryCard";
 
@@ -81,22 +79,12 @@ const withDefaults = (k?: CallSummaryKpis | null): CallSummaryKpis => ({
   },
 });
 
-const formatRangeLabel = (range: DateRange): string => {
-  const { from, to } = range;
-
-  if (from && to) {
-    return `${format(from, "MMM d, yyyy")} – ${format(to, "MMM d, yyyy")}`;
-  }
-  if (from) return `From ${format(from, "MMM d, yyyy")}`;
-  if (to) return `Until ${format(to, "MMM d, yyyy")}`;
-  return "No date range selected";
-};
 
 const Home = () => {
 
-  const [filters, setFilters] = useUrlFilters();
+  const [filters, _setFilters] = useUrlFilters();
 
-  const [marketingSourceIds, setMarketingSourceIds] = useState<string[]>(filters?.marketingSourceIds ?? []);
+  const [marketingSourceIds, _setMarketingSourceIds] = useState<string[]>(filters?.marketingSourceIds ?? []);
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 

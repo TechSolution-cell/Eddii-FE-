@@ -1,4 +1,3 @@
-// app/(main)/home/insights/page.tsx
 "use client";
 
 import { useState } from "react";
