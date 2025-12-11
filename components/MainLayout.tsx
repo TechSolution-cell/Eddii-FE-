@@ -87,17 +87,17 @@ export default function MainLayout({ user, onLogout, children }: MainLayoutProps
 
   // Authenticated layout
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 w-screen">  
       <Sidebar user={user} onLogout={handleLogOut} />
 
       {/* Main content area */}
-      <div className="flex-1 transition-all duration-300"> {/* lg:ml-64 removed*/}
+      <div className="flex-1 transition-all duration-300 w-full"> {/* lg:ml-64 removed*/}
         <ScrollArea className='h-screen'>
-          <main className="p-6">
+          <main className="p-6 w-full">
             {children}
           </main>
         </ScrollArea>
       </div>
-    </div>
+    </div>  
   );
 }

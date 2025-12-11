@@ -141,7 +141,7 @@ export function FilterBar({ defaultValues, onChange, onClear, isDisabled = false
                         </p>
                     )} */}
                 </div>
-                <div className={cn('flex gap-2', 'items-start translate-y-6')}>
+                <div className={cn('flex gap-2', 'items-start sm:translate-y-6')}>
                     <Button
                         disabled={isDisabled}
                         type="button"

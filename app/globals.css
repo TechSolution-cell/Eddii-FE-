@@ -94,13 +94,6 @@
   --sidebar-ring: var(--vsc-sidebar-ring, var(--scn-sidebar-ring));
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @layer base {
   html {
     /* Tailwind text utilities are rem-based, so this is your global scale */
@@ -108,9 +101,6 @@
     /* e.g., 16px default */
   }
 
-  /* body {
-    @apply font-sans text-gray-900 antialiased;
-  } */
 }
 
 @layer utilities {
@@ -123,6 +113,19 @@
     border-bottom-style: solid;
     /* custom style */
   }
+
+  /* Fix Radix UI ScrollArea Viewport wrapper div display issue */
+  [data-radix-scroll-area-viewport] > div {
+    display: block !important;
+    min-width: 0 !important;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 @theme {
@@ -193,28 +196,8 @@
   --color-sidebar-ring: hsl(var(--scn-sidebar-ring));
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-
-
-/* 
-
-/* Dark Mode */
-/* .dark {
-  --scn-primary: 0 0% 98%;
-  --scn-primary-foreground: 240 5.9% 10%;
-  --scn-muted: 240 3.7% 15.9%;
-  --scn-muted-foreground: 240 5% 64.9%;
-  --ds-shadow-tooltip: var(--ds-shadow-border-small), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 4px 8px rgba(0, 0, 0, 0.04);
-  --ds-shadow-menu: var(--ds-shadow-border-small), 0px 1px 1px rgba(0, 0, 0, 0.02), 0px 4px 8px -4px rgba(0, 0, 0, 0.04), 0px 16px 24px -8px rgba(0, 0, 0, 0.06);
-} */

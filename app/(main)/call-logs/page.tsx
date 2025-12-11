@@ -143,9 +143,9 @@ export default function Page() {
 
   return (
     <>
-      <Card className="border-purple-200 border bg-gradient-to-br from-white to-purple-50">
+      <Card className="w-full border-purple-200 border bg-gradient-to-br from-white to-purple-50">
         {/* ── Header ───────────────────────────────────────────────────────────── */}
-        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
+        <CardHeader className="w-full flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
           <div>
             <CardTitle className="text-2xl text-white">Call Logs</CardTitle>
             <CardDescription className='mt-2 mb-5 text-white/80'>View call details and transcripts</CardDescription>
@@ -153,7 +153,7 @@ export default function Page() {
         </CardHeader>
 
         {/* ── List  ────────────────────────────────────────────────────────────────────────── */}
-        <CardContent className='mt-3'>
+        <CardContent className='w-full mt-3 '>
           <div className='flex justify-end mb-3 gap-5'>
             <FilterBar
               defaultValues={filters}
@@ -173,14 +173,14 @@ export default function Page() {
 
             <div className="flex items-center gap-2 text-sm text-purple-600">
               <Phone className="w-4 h-4" />
-              <span>{data?.meta.total} total calls</span>
+              <span className='text-center'>{data?.meta.total} total calls</span>
             </div>
           </div>
 
           {/* ── Table  ────────────────────────────────────────────────────────────────────────── */}
           <div className="min-h-0 max-h-[calc(100vh-338px)] overflow-y-auto">
             <div className={cn(
-              "relative transition-opacity duration-200",
+              "relative transition-opacity duration-200 w-full",
               isPaginatingNow && [
                 "opacity-50",
                 "pointer-events-none",
@@ -188,16 +188,16 @@ export default function Page() {
                 "cursor-not-allowed"
               ]
             )}>
-              <Table className='table-fixed'>
+              <Table className='table-fixed w-full min-w-[740px]'>
                 <TableHeader className='sticky top-0 z-10'>
                   <TableRow className="bg-purple-200 hover:bg-purple-200">
-                    <TableHead className="text-purple-800 font-semibold ">Caller</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Tracking Number</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Marketing Source</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Duration</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Status</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Date</TableHead>
-                    <TableHead className="text-right text-purple-800 font-semibold">Actions</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Caller</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Tracking Number</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Marketing Source</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Duration</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Status</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Date</TableHead>
+                    <TableHead className="text-right text-purple-800 font-semibold py-2">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className='cursor-pointer'>

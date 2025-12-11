@@ -143,9 +143,9 @@ const Page = () => {
 
   return (
     <>
-      <Card className="border-purple-200 border bg-gradient-to-br from-white to-purple-50">
+      <Card className="w-full border-purple-200 border bg-gradient-to-br from-white to-purple-50">
         {/* ── Header ───────────────────────────────────────────────────────────── */}
-        <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
+        <CardHeader className="w-full flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
           <div>
             <CardTitle className="text-2xl text-white">Call tracking numbers</CardTitle>
             <CardDescription className='mt-2 mb-5 text-white/80'>Manage your tracking numbers</CardDescription>
@@ -181,25 +181,25 @@ const Page = () => {
               clearFilters();
             }}
           />
-          <div className="min-h-0 max-h-[calc(100vh-338px)] overflow-y-auto pt-5">
+          <div className="w-full min-h-0 max-h-[calc(100vh-338px)] overflow-y-auto pt-5">
             <div className={cn(
               "relative transition-opacity duration-200",
               isPaginatingNow && [
                 "opacity-50",
                 "pointer-events-none",
                 "blur-[1.5px]",
-                "cursor-not-allowed"
+                "cursor-not-allowed" 
               ]
             )}>
-              <Table className='table-fixed'>
+              <Table className='table-fixed w-full min-w-[740px]'>
                 <TableHeader className='sticky top-0 z-10'>
                   <TableRow className="bg-purple-200 hover:bg-purple-200">
-                    <TableHead className="text-purple-800 font-semibold">Tracking Number</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Forwarding Number</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Marketing Source</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Created</TableHead>
-                    <TableHead className="text-purple-800 font-semibold">Updated</TableHead>
-                    <TableHead className="text-purple-800 font-semibold text-right w-35">Actions</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Tracking Number</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Forwarding Number</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Marketing Source</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Created</TableHead>
+                    <TableHead className="text-purple-800 font-semibold py-2">Updated</TableHead>
+                    <TableHead className="text-purple-800 font-semibold text-right w-35 py-2">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className='cursor-pointer'>

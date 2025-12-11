@@ -166,7 +166,7 @@ export function MarketingSourceSelect({
                     role="combobox"
                     aria-expanded={open}
                     disabled={disabled}
-                    className="w-70 justify-between border-purple-200 focus:border-purple-500"
+                    className="w-full justify-between border-purple-200 focus:border-purple-500"
                 >
                     <span
                         className={cn(

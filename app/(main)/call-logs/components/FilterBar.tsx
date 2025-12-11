@@ -52,8 +52,8 @@ export function FilterBar({ defaultValues, onChange, isDisabled }: Props) {
 
     return (
         <Form {...form}>
-            <form className={cn("flex sm:flex-row flex-col gap-3 items-center", isDisabled && "pointer-events-none")}>
-                <div className='w-80 '>
+            <form className={cn("flex sm:flex-row flex-col gap-3 items-center ", isDisabled && "pointer-events-none")}>
+                <div className='md:w-80'>
                     {/* <Label htmlFor="marketingSource" className="select-none">Marketing Source</Label> */}
                     <MarketingSourcePicker
                         value={form.watch("marketingSourceId")}

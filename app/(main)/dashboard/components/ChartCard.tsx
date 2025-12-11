@@ -131,8 +131,8 @@ export function ChartCard({
 
   return (
     <Card className="border-purple-200 border shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div className="flex items-center space-x-4">
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-center items-end sm:justify-between pb-2 gap-2">
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={handleDateRangeChange}
@@ -147,17 +147,17 @@ export function ChartCard({
               "custom",
             ]}
           />
-        </div>
-        <div className="flex justify-between gap-2">
-          {/* <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+          <div className="md:w-80 w-52">
+            {/* <Button className="bg-purple-600 hover:bg-purple-700 text-white">
             Filter By Marketing sources
           </Button> */}
-          <MarketingSourceSelect
-            values={marketingSourceIds}
-            onChange={handleMarketingSourcesChange}
-            placeholder="Filter by marketing sources"
-            includeNoneOption={false}
-          />
+            <MarketingSourceSelect
+              values={marketingSourceIds}
+              onChange={handleMarketingSourcesChange}
+              placeholder="Filter by marketing sources"
+              includeNoneOption={false}
+            />
+          </div>
         </div>
       </CardHeader>
 

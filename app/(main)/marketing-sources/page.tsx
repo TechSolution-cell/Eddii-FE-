@@ -160,9 +160,9 @@ export default function Page() {
 
     return (
         <>
-            <Card className="border-purple-200 border bg-gradient-to-br from-white to-purple-50">
+            <Card className="w-full border-purple-200 border bg-gradient-to-br from-white to-purple-50">
                 {/* ── Header ───────────────────────────────────────────────────────────── */}
-                <CardHeader className="flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
+                <CardHeader className="w-full flex flex-row items-center justify-between bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-lg">
                     <div>
                         <CardTitle className="text-2xl text-white">Marketing Sources Management</CardTitle>
                         <CardDescription className='mt-2 mb-5 text-white/80'>Add a new marketing source to manage marketing</CardDescription>
@@ -198,9 +198,9 @@ export default function Page() {
                         }} />
 
                     {/* ── Table  ────────────────────────────────────────────────────────────────────────── */}
-                    <div className="min-h-0 max-h-[calc(100vh-338px)] overflow-y-auto pt-5">
+                    <div className="min-h-0 max-h-[calc(100vh-338px)] pt-5 w-full overflow-y-auto">
                         <div className={cn(
-                            "relative transition-opacity duration-200",
+                            "relative transition-opacity duration-200 w-full",
                             isPaginatingNow && [
                                 "opacity-50",
                                 "pointer-events-none",
@@ -208,16 +208,16 @@ export default function Page() {
                                 "cursor-not-allowed"
                             ]
                         )}>
-                            <Table className='table-fixed'>
+                            <Table className='table-fixed w-full min-w-[740px]'>
                                 <TableHeader className='sticky top-0 z-10'>
                                     <TableRow className="bg-purple-200 hover:bg-purple-200">
-                                        <TableHead className="text-purple-800 font-semibold">Name</TableHead>
-                                        <TableHead className="text-purple-800 font-semibold">Channel</TableHead>
-                                        <TableHead className="text-purple-800 font-semibold">Campaign Name</TableHead>
-                                        <TableHead className="text-purple-800 font-semibold">Description</TableHead>
-                                        <TableHead className="text-purple-800 font-semibold">Created</TableHead>
-                                        <TableHead className="text-purple-800 font-semibold">Updated</TableHead>
-                                        <TableHead className="text-right text-purple-800 font-semibold w-35">Actions</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold py-2">Name</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold py-2">Channel</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold py-2">Campaign Name</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold py-2">Description</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold py-2">Created</TableHead>
+                                        <TableHead className="text-purple-800 font-semibold py-2">Updated</TableHead>
+                                        <TableHead className="text-right text-purple-800 font-semibold w-35 py-2">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className='cursor-pointer'>
