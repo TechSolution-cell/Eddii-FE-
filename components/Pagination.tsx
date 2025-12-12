@@ -101,7 +101,7 @@ export function Pagination({
             </div>
 
             <div className="flex items-center space-x-4">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground md:block hidden">
                     {!isPaginating ? `Showing ${startItem} to ${endItem} of ${totalItems} entries` : 'Refreshing…'}
                 </span>
 
